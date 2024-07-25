@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "605614697780",
+    "project_id": "orbitx-32de1",
+    "storage_bucket": "orbitx-32de1.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:605614697780:android:74e1445c9739f0a42f4961",
+        "android_client_info": {
+          "package_name": "com.example.orbitx"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDdbc5lWaox0WQPnlZIqjgLVFr_loKrNs0"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
