@@ -1,17 +1,10 @@
 package com.example.orbitx.views
 
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
-import androidx.compose.material3.Button
-import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
-import androidx.compose.material3.TextFieldDefaults
+import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -20,21 +13,22 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.input.TextFieldValue
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
-import com.example.orbitx.views.border
-import com.example.orbitx.views.backgroundTransparent
 
 @Composable
-fun SignInScreen() {
-    val customColor = Color(0xFF121212)
+fun SignInScreen(
+    onNavigateToHome: () -> Unit,
+    onNavigateToRegister: () -> Unit,
+    viewModel: AuthViewModel = viewModel()
+) {
     val urbanistLight = FontFamily(Font(R.font.urbanist_light))
-    val urbanistRegular = FontFamily(Font(R.font.urbanist_regular))
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
+    val customColor = Color(0xFF121212)
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         content = { paddingValues ->
@@ -62,139 +56,74 @@ fun SignInScreen() {
                     Text(
                         text = "Sign In",
                         fontSize = 30.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = urbanistRegular,
-                        color = Color.Black
+                        color = Color.Black,
+                        fontFamily = urbanistMedium
                     )
                     Spacer(modifier = Modifier.height(70.dp))
                     var email by remember { mutableStateOf(TextFieldValue("")) }
-//                    BasicTextField(
-//                        value = email,
-//                        onValueChange = { email = it },
-//                        modifier = Modifier
-//                            .padding(horizontal = 38.dp)
-//                            .backgroundTransparent()
-//                            .border(underline = true, color = customColor)
-//                            .align(Alignment.CenterHorizontally),
-//                        textStyle = androidx.compose.ui.text.TextStyle(
-//                            color = Color.Black,
-//                            fontFamily = urbanistLight,
-//                            fontSize = 14.sp
-//                        ),
-//                        decorationBox = { innerTextField ->
-//                            Box(modifier = Modifier.fillMaxWidth()) {
-//                                if (email.text.isEmpty()) {
-//                                    Text(
-//                                        text = "Email address",
-//                                        color = customColor,
-//                                        fontFamily = urbanistLight,
-//                                        fontSize = 14.sp
-//                                    )
-//                                }
-//                                innerTextField()
-//                            }
-//                        }
-//                    )
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
                         modifier = Modifier
                             .padding(horizontal = 38.dp)
-                            .fillMaxWidth()
-                            .align(Alignment.CenterHorizontally),
+                            .fillMaxWidth(),
                         textStyle = TextStyle(
                             color = Color.Black,
-                            fontFamily = urbanistLight,
                             fontSize = 14.sp
                         ),
                         placeholder = {
                             Text(
                                 text = "Email address",
                                 color = customColor,
-                                fontFamily = urbanistLight,
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                fontFamily = urbanistLight
                             )
                         }
                     )
-
                     Spacer(modifier = Modifier.height(14.dp))
                     var password by remember { mutableStateOf(TextFieldValue("")) }
-//                    BasicTextField(
-//                        value = password,
-//                        onValueChange = { password = it },
-//                        modifier = Modifier
-//                            .padding(horizontal = 38.dp)
-//                            .backgroundTransparent()
-//                            .border(underline = true, color = customColor)
-//                            .align(Alignment.CenterHorizontally),
-//                        textStyle = androidx.compose.ui.text.TextStyle(
-//                            color = Color.Black,
-//                            fontFamily = urbanistLight,
-//                            fontSize = 14.sp
-//                        ),
-//                        decorationBox = { innerTextField ->
-//                            Box(modifier = Modifier.fillMaxWidth()) {
-//                                if (password.text.isEmpty()) {
-//                                    Text(
-//                                        text = "Password",
-//                                        color = customColor,
-//                                        fontFamily = urbanistLight,
-//                                        fontSize = 14.sp
-//                                    )
-//                                }
-//                                innerTextField()
-//                            }
-//                        }
-//                    )
-
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         modifier = Modifier
                             .padding(horizontal = 38.dp)
-                            .fillMaxWidth()
-                            .align(Alignment.CenterHorizontally),
+                            .fillMaxWidth(),
                         textStyle = TextStyle(
                             color = Color.Black,
-                            fontFamily = urbanistLight,
                             fontSize = 14.sp
                         ),
                         placeholder = {
                             Text(
                                 text = "Password",
                                 color = customColor,
-                                fontFamily = urbanistLight,
-                                fontSize = 14.sp
+                                fontSize = 14.sp,
+                                fontFamily = urbanistLight
                             )
                         }
                     )
                     Spacer(modifier = Modifier.height(40.dp))
                     val customButtonColor = Color(0xFF492468)
                     Button(
-                        onClick = {},
+                        onClick = { viewModel.signIn(email.text, password.text, onNavigateToHome) },
                         colors = ButtonDefaults.buttonColors(containerColor = customButtonColor),
                         modifier = Modifier
                             .width(150.dp)
                             .height(50.dp),
                         shape = RoundedCornerShape(0.dp),
                     ) {
-                        Text(text = "Log In", color = Color.White, fontFamily = urbanistMedium, fontSize = 17.sp)
+                        Text(text = "Log In", color = Color.White, fontSize = 17.sp, fontFamily = urbanistLight)
                     }
-
                     Spacer(modifier = Modifier.height(10.dp))
-
                     Text(
                         text = "Forgot Password?",
-                        fontFamily = urbanistLight,
                         fontSize = 14.sp,
                         modifier = Modifier
                             .clickable { /* Handle Forgot Password */ }
                             .padding(vertical = 8.dp)
-                            .border(underline = true, color = customColor)
-                            .align(Alignment.CenterHorizontally)
+                            .align(Alignment.CenterHorizontally),
+                        fontFamily = urbanistLight
                     )
-
-                    Spacer(modifier = Modifier.height(50.dp)) // Increase the height here to move the Row up
+                    Spacer(modifier = Modifier.height(50.dp))
                 }
                 Row(
                     modifier = Modifier
@@ -205,22 +134,20 @@ fun SignInScreen() {
                 ) {
                     Text(
                         text = "Still without account?",
-                        fontFamily = urbanistLight,
-                        fontSize = 14.sp
+                        fontSize = 14.sp,
+                        fontFamily = urbanistLight
                     )
                     Spacer(modifier = Modifier.width(4.dp))
                     val customButtonColor = Color(0xFF492468)
                     Text(
                         text = "Create one",
-                        fontFamily = urbanistLight,
                         fontSize = 14.sp,
                         color = customButtonColor,
-                        modifier = Modifier.clickable { }
+                        modifier = Modifier.clickable(onClick = onNavigateToRegister),
+                        fontFamily = urbanistLight
                     )
                 }
             }
         }
     )
 }
-
-
