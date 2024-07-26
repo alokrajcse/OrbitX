@@ -8,13 +8,16 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
+import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
+import androidx.compose.material3.TextFieldDefaults
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
@@ -49,7 +52,7 @@ fun SignInScreen() {
                     verticalArrangement = Arrangement.Center
                 ) {
                     Image(
-                        painter = painterResource(id = R.drawable.logoclear1),
+                        painter = painterResource(id = R.drawable.logoclear_one),
                         contentDescription = null,
                         modifier = Modifier
                             .size(190.dp)
@@ -65,60 +68,104 @@ fun SignInScreen() {
                     )
                     Spacer(modifier = Modifier.height(70.dp))
                     var email by remember { mutableStateOf(TextFieldValue("")) }
-                    BasicTextField(
+//                    BasicTextField(
+//                        value = email,
+//                        onValueChange = { email = it },
+//                        modifier = Modifier
+//                            .padding(horizontal = 38.dp)
+//                            .backgroundTransparent()
+//                            .border(underline = true, color = customColor)
+//                            .align(Alignment.CenterHorizontally),
+//                        textStyle = androidx.compose.ui.text.TextStyle(
+//                            color = Color.Black,
+//                            fontFamily = urbanistLight,
+//                            fontSize = 14.sp
+//                        ),
+//                        decorationBox = { innerTextField ->
+//                            Box(modifier = Modifier.fillMaxWidth()) {
+//                                if (email.text.isEmpty()) {
+//                                    Text(
+//                                        text = "Email address",
+//                                        color = customColor,
+//                                        fontFamily = urbanistLight,
+//                                        fontSize = 14.sp
+//                                    )
+//                                }
+//                                innerTextField()
+//                            }
+//                        }
+//                    )
+                    OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
                         modifier = Modifier
                             .padding(horizontal = 38.dp)
-                            .backgroundTransparent()
-                            .border(underline = true, color = customColor)
+                            .fillMaxWidth()
                             .align(Alignment.CenterHorizontally),
-                        textStyle = androidx.compose.ui.text.TextStyle(
+                        textStyle = TextStyle(
                             color = Color.Black,
                             fontFamily = urbanistLight,
                             fontSize = 14.sp
                         ),
-                        decorationBox = { innerTextField ->
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                if (email.text.isEmpty()) {
-                                    Text(
-                                        text = "Email address",
-                                        color = customColor,
-                                        fontFamily = urbanistLight,
-                                        fontSize = 14.sp
-                                    )
-                                }
-                                innerTextField()
-                            }
+                        placeholder = {
+                            Text(
+                                text = "Email address",
+                                color = customColor,
+                                fontFamily = urbanistLight,
+                                fontSize = 14.sp
+                            )
                         }
                     )
-                    Spacer(modifier = Modifier.height(20.dp))
+
+                    Spacer(modifier = Modifier.height(14.dp))
                     var password by remember { mutableStateOf(TextFieldValue("")) }
-                    BasicTextField(
+//                    BasicTextField(
+//                        value = password,
+//                        onValueChange = { password = it },
+//                        modifier = Modifier
+//                            .padding(horizontal = 38.dp)
+//                            .backgroundTransparent()
+//                            .border(underline = true, color = customColor)
+//                            .align(Alignment.CenterHorizontally),
+//                        textStyle = androidx.compose.ui.text.TextStyle(
+//                            color = Color.Black,
+//                            fontFamily = urbanistLight,
+//                            fontSize = 14.sp
+//                        ),
+//                        decorationBox = { innerTextField ->
+//                            Box(modifier = Modifier.fillMaxWidth()) {
+//                                if (password.text.isEmpty()) {
+//                                    Text(
+//                                        text = "Password",
+//                                        color = customColor,
+//                                        fontFamily = urbanistLight,
+//                                        fontSize = 14.sp
+//                                    )
+//                                }
+//                                innerTextField()
+//                            }
+//                        }
+//                    )
+
+                    OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
                         modifier = Modifier
                             .padding(horizontal = 38.dp)
-                            .backgroundTransparent()
-                            .border(underline = true, color = customColor)
+                            .fillMaxWidth()
                             .align(Alignment.CenterHorizontally),
-                        textStyle = androidx.compose.ui.text.TextStyle(
+                        textStyle = TextStyle(
                             color = Color.Black,
                             fontFamily = urbanistLight,
                             fontSize = 14.sp
                         ),
-                        decorationBox = { innerTextField ->
-                            Box(modifier = Modifier.fillMaxWidth()) {
-                                if (password.text.isEmpty()) {
-                                    Text(
-                                        text = "Password",
-                                        color = customColor,
-                                        fontFamily = urbanistLight,
-                                        fontSize = 14.sp
-                                    )
-                                }
-                                innerTextField()
-                            }
+                        placeholder = {
+                            Text(
+                                text = "Password",
+                                color = customColor,
+                                fontFamily = urbanistLight,
+                                fontSize = 14.sp
+                            )
                         }
                     )
                     Spacer(modifier = Modifier.height(40.dp))
@@ -175,3 +222,5 @@ fun SignInScreen() {
         }
     )
 }
+
+

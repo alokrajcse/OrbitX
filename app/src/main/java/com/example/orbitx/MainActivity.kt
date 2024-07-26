@@ -5,6 +5,7 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import com.example.orbitx.ui.theme.OrbitXTheme
 import com.example.orbitx.views.SignInScreen
+import com.example.orbitx.views.SignInTestScreen
 import com.example.orbitx.views.SignUpScreen
 
 class MainActivity : ComponentActivity() {
@@ -13,7 +14,7 @@ class MainActivity : ComponentActivity() {
         setContent {
             OrbitXTheme {
                 //SignUpScreen()
-                SignInScreen()
+                SignInTestScreen()
             }
         }
     }
