@@ -91,13 +91,10 @@ fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel
     val roomId = getChatRoomId(user.userId, Firebase.auth.currentUser?.uid ?: "")
     val lastTime by viewModel.getLastTime(roomId).observeAsState("")
 
-
-
-
     Card(
         onClick = { navController.navigate("MainChatScreen/${user.userId}") },
         modifier = Modifier
-            .fillMaxWidth().height(85.dp)
+            .fillMaxWidth()
             .padding(2.dp),
         colors = CardDefaults.cardColors(colorResource(id = R.color.white)),
         elevation = CardDefaults.cardElevation(5.dp)
@@ -123,16 +120,18 @@ fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel
                     .width(52.dp)
             )
 
-            Text(
-                text = user.username,
-                fontSize = 20.sp,
-                fontStyle = FontStyle.Normal,
-                fontWeight = FontWeight.Bold,
-                textAlign = TextAlign.Start,
-                modifier = Modifier
-                    .padding(15.dp)
-                    .width(250.dp)
-            )
+            Box(modifier = Modifier.weight(1f) ){
+                Text(
+                    text = user.username,
+                    fontSize = 20.sp,
+                    fontStyle = FontStyle.Normal,
+                    fontWeight = FontWeight.Bold,
+                    textAlign = TextAlign.Start,
+                    modifier = Modifier
+                        .padding(15.dp)
+
+                )
+            }
 
             Text(text = lastTime, textAlign = TextAlign.End)
         }

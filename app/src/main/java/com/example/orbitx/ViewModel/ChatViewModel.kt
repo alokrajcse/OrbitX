@@ -38,3 +38,4 @@ class ChatViewModel : ViewModel() {
 
     fun getLastTime(roomId: String): LiveData<String> = ChatRepository.getLastTime(roomId)
 }
+
