@@ -1,4 +1,4 @@
-package com.example.orbitx.views
+package com.example.orbitx.Views
 
 import android.widget.Toast
 import androidx.compose.foundation.Image

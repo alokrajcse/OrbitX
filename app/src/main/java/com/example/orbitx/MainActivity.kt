@@ -1,6 +1,7 @@
 package com.example.orbitx
 
 import android.annotation.SuppressLint
+import android.app.Activity
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -49,6 +50,7 @@ import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
+import androidx.navigation.activity
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -62,18 +64,16 @@ import com.example.orbitx.Views.Exit
 import com.example.orbitx.Views.SearchScreen
 import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.ui.theme.OrbitXTheme
-import com.example.orbitx.views.SignInScreen
-import com.example.orbitx.views.SignUpScreen
+import com.example.orbitx.Views.SignInScreen
+import com.example.orbitx.Views.SignUpScreen
 
-//import com.example.orbitx.views.SignInScreen
-//import com.example.orbitx.views.SignUpScreen
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContent {
             OrbitXTheme {
-                AppNavigation()
+                AppNavigation(activity = this)
                 //MainScreen()
 
             }
@@ -82,7 +82,7 @@ class MainActivity : ComponentActivity() {
 }
 
 @Composable
-fun AppNavigation() {
+fun AppNavigation(activity: Activity) {
     val navController = rememberNavController()
     NavHost(navController = navController, startDestination = "login") {
         composable("login") {
@@ -100,7 +100,7 @@ fun AppNavigation() {
             HomeScreen(navController)
         }
         composable("main") {
-            MainScreen()
+            MainScreen(activity = activity)
         }
         composable("MainChatScreen/{data}", arguments = listOf(navArgument("data"){type=
             NavType.StringType}))
@@ -156,7 +156,7 @@ fun HomeScreen(navController: NavController) {
 
 
 @Composable
-fun MainScreen() {
+fun MainScreen(activity: Activity) {
 
 
     val navController = rememberNavController()
@@ -190,7 +190,7 @@ fun MainScreen() {
                 UserProfile()
             }
             composable("logout") {
-                Exit()
+                Exit(activity = activity, navController = navController)
             }
             composable("chats") {
                 ChatHomeScreen(navController)
@@ -211,7 +211,7 @@ fun MainScreen() {
 
 fun shouldShowBottomBar(currentRoute: String?): Boolean {
 
-    val routesWithoutBottomBar = listOf("chats","MainChatScreen/{data}")
+    val routesWithoutBottomBar = listOf("chats","MainChatScreen/{data}","logout")
     return !routesWithoutBottomBar.contains(currentRoute)
 }
 
@@ -251,10 +251,19 @@ fun BottomNavigationBar(navController: NavController, selectedIndex: Int, onItem
         )
     )
 
+
+
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentRoute = navBackStackEntry?.destination?.route
+
     NavigationBar(modifier = Modifier.height(80.dp), containerColor = colorResource(id = R.color.orange)) {
+
         items.forEachIndexed { index, item ->
+
+            val isSelected = currentRoute == item.title
+
             NavigationBarItem(
-                selected = selectedIndex == index,
+                selected = isSelected,
                 onClick = {
                     onItemSelected(index)
                     navController.navigate(item.title) {
