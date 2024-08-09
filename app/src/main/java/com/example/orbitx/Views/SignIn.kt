@@ -1,4 +1,4 @@
-package com.example.orbitx.views
+package com.example.orbitx.Views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.clickable

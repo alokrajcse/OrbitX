@@ -60,6 +60,9 @@ dependencies {
     implementation(libs.androidx.ui.graphics)
     implementation(libs.androidx.ui.tooling.preview)
     implementation(libs.androidx.material3)
+    implementation(libs.firebase.database)
+    implementation(libs.androidx.runtime.livedata)
+    implementation(libs.firebase.storage)
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
@@ -73,11 +76,13 @@ dependencies {
     implementation("com.google.firebase:firebase-firestore")
     implementation("androidx.navigation:navigation-compose:2.6.0")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
-<<<<<<< Updated upstream
-=======
+
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("io.coil-kt:coil:2.7.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
 
->>>>>>> Stashed changes
+
+
+    
+
 }

@@ -1,4 +1,4 @@
-package com.example.orbitx.views
+package com.example.orbitx.Views
 
 import android.widget.Toast
 import androidx.compose.foundation.Image
@@ -32,6 +32,8 @@ fun SignUpScreen(
     val urbanistRegular = FontFamily(Font(R.font.urbanist_regular))
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
     val customColor = Color(0xFF121212)
+
+    var username by remember { mutableStateOf(TextFieldValue("")) }
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
     val context = LocalContext.current
@@ -67,6 +69,26 @@ fun SignUpScreen(
                         color = Color.Black
                     )
                     Spacer(modifier = Modifier.height(70.dp))
+                    OutlinedTextField(
+                        value = username,
+                        onValueChange = { username = it },
+                        modifier = Modifier
+                            .padding(horizontal = 38.dp)
+                            .fillMaxWidth(),
+                        textStyle = TextStyle(
+                            color = Color.Black,
+                            fontSize = 14.sp
+                        ),
+                        placeholder = {
+                            Text(
+                                text = "Username",
+                                color = customColor,
+                                fontFamily = urbanistLight,
+                                fontSize = 14.sp
+                            )
+                        }
+                    )
+                    Spacer(modifier = Modifier.height(14.dp))
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -110,7 +132,7 @@ fun SignUpScreen(
                     val customButtonColor = Color(0xFF492468)
                     Button(
                         onClick = {
-                            viewModel.signUp(email.text, password.text) {
+                            viewModel.signUp(username.text,email.text, password.text) {
                                 Toast.makeText(context, "Account successfully created!", Toast.LENGTH_SHORT).show()
                                 onNavigateBackToLogin()
                             }

@@ -3,6 +3,7 @@ package com.example.orbitx.Views
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -177,4 +178,10 @@ fun PreviewUserProfileSection() {
 }
 
 
+
+
+
+
+    
+}
 
