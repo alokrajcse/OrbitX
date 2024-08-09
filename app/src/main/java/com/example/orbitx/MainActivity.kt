@@ -66,6 +66,7 @@ import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.ui.theme.OrbitXTheme
 import com.example.orbitx.Views.SignInScreen
 import com.example.orbitx.Views.SignUpScreen
+import com.example.orbitx.Views.UserProfileSection
 
 
 class MainActivity : ComponentActivity() {
@@ -190,7 +191,15 @@ fun MainScreen(activity: Activity) {
                 NavType.StringType}))
             { backStackEntry ->
                 val data = backStackEntry.arguments?.getString("data") ?: ""
-                UserProfile()
+                UserProfileSection(userProfile = UserProfile(
+                    profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
+                    username = "Alex",
+                    bio = "Software engineer and cat lover",
+                    isFollowing = true,
+                    postCount = 10,
+                    followerCount = 1000,
+                    followingCount = 500
+                ))
             }
             composable("logout") {
                 Exit(activity = activity, navController = navController)
@@ -241,7 +250,7 @@ fun BottomNavigationBar(navController: NavController, selectedIndex: Int, onItem
             hasNews = false
         ),
         BottomNavigationItem(
-            title = "profile",
+            title = "profile/{data}",
             selectedIcon = Icons.Default.Person,
             unselectedIcon = Icons.Outlined.Person,
             hasNews = false
