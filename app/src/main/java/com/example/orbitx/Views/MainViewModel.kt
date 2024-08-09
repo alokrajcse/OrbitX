@@ -2,11 +2,14 @@ package com.example.orbitx
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
 
 class MainViewModel : ViewModel() {
 
@@ -16,7 +19,7 @@ class MainViewModel : ViewModel() {
     private val _isSearching = MutableStateFlow(false)
     val isSearching = _isSearching.asStateFlow()
 
-    private val _persons = MutableStateFlow(allPersons)
+    private val _persons = MutableStateFlow<List<Person>>(emptyList())
     val persons = searchText
         .combine(_persons) { text, persons ->
             if (text.isBlank()) {
@@ -33,38 +36,40 @@ class MainViewModel : ViewModel() {
             _persons.value
         )
 
+    init {
+        fetchPersonsFromFirebase()
+    }
+
     fun onSearchTextChange(text: String) {
         _searchText.value = text
+    }
+
+    private fun fetchPersonsFromFirebase() {
+        viewModelScope.launch {
+            val userRef = FirebaseDatabase.getInstance().reference.child("users")
+
+            userRef.get().addOnSuccessListener { dataSnapshot ->
+                val personsList = mutableListOf<Person>()
+                for (child in dataSnapshot.children) {
+                    val username = child.child("username").getValue(String::class.java) ?: ""
+                    personsList.add(Person(userName = username))
+                }
+                _persons.value = personsList
+            }
+        }
     }
 }
 
 data class Person(
-    val userName: String,
-    val email: String
+    val userName: String
 ) {
     fun doesMatchSearchQuery(query: String): Boolean {
         val matchingCombinations = listOf(
-            "$userName$email",
-            "$userName $email",
-            "${userName.first()}${email.first()}",
+            "$userName",
+            "${userName.first()}"
         )
         return matchingCombinations.any {
             it.contains(query, ignoreCase = true)
         }
     }
 }
-
-private val allPersons = listOf(
-    Person(
-        userName = "nigger12345",
-        email = "ohio@gmail.com"
-    ),
-    Person(
-        userName = "karan68u6",
-        email = "kuldeep@gmail.com"
-    ),
-    Person(
-        userName = "67luffy",
-        email = "luffy@gmail.com"
-    )
-)
