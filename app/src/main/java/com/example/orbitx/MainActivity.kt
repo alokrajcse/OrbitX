@@ -181,12 +181,15 @@ fun MainScreen(activity: Activity) {
                 HomeScreen(navController)
             }
             composable("search") {
-                SearchScreen()
+                SearchScreen(navController)
             }
             composable("newpost") {
                 CreatePostScreen()
             }
-            composable("profile") {
+            composable("profile/{data}", arguments = listOf(navArgument("data"){type=
+                NavType.StringType}))
+            { backStackEntry ->
+                val data = backStackEntry.arguments?.getString("data") ?: ""
                 UserProfile()
             }
             composable("logout") {
