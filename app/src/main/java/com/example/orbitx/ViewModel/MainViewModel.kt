@@ -52,7 +52,8 @@ class MainViewModel : ViewModel() {
                 val personsList = mutableListOf<Person>()
                 for (child in dataSnapshot.children) {
                     val username = child.child("username").getValue(String::class.java) ?: ""
-                    personsList.add(Person(userName = username))
+                    val parentKey = child.key ?: ""
+                    personsList.add(Person(userName = username, parent = parentKey))
                 }
                 _persons.value = personsList
             }
@@ -61,7 +62,8 @@ class MainViewModel : ViewModel() {
 }
 
 data class Person(
-    val userName: String
+    val userName: String,
+    val parent: String
 ) {
     fun doesMatchSearchQuery(query: String): Boolean {
         val matchingCombinations = listOf(
