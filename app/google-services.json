@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "1080500193994",
+    "project_id": "createpost-76169",
+    "storage_bucket": "createpost-76169.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:1080500193994:android:6f43521878f0b674afc233",
+        "android_client_info": {
+          "package_name": "com.example.createpost"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyA5QTNdgb-Z_2h8NX675Je6uFVWt68vD_I"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
