@@ -58,7 +58,6 @@ import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
 import com.example.chatbyme2.Screens.MainChatScreen
 import com.example.chatbyme2.ui.ChatHomeScreen
-
 import com.example.orbitx.Views.CreatePostScreen
 import com.example.orbitx.Views.Exit
 import com.example.orbitx.Views.SearchScreen
@@ -66,6 +65,8 @@ import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.ui.theme.OrbitXTheme
 import com.example.orbitx.Views.SignInScreen
 import com.example.orbitx.Views.SignUpScreen
+import com.example.orbitx.views.HomeScreen
+import com.example.orbitx.views.MainScreen
 
 
 class MainActivity : ComponentActivity() {
@@ -74,7 +75,6 @@ class MainActivity : ComponentActivity() {
         setContent {
             OrbitXTheme {
                 AppNavigation(activity = this)
-                //MainScreen()
 
             }
         }
@@ -110,188 +110,3 @@ fun AppNavigation(activity: Activity) {
         }
     }
 }
-
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun HomeScreen(navController: NavController) {
-    val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
-
-
-
-    Scaffold(modifier = Modifier.fillMaxSize(), topBar = {
-        Box(modifier = Modifier
-            .fillMaxWidth()
-            .background(colorResource(id = R.color.orange))){
-
-            Row(verticalAlignment = Alignment.CenterVertically, modifier = Modifier
-                .fillMaxWidth()
-                .padding(5.dp)) {
-                Text(text = "OrbitX", modifier = Modifier
-                    .padding(10.dp)
-                    .weight(1f), fontSize = 25.sp,
-                    fontWeight = FontWeight.Bold,
-                    fontFamily  = urbanistMedium,
-                    color = Color.Black
-                )
-
-
-                IconButton(onClick = {navController.navigate("chats")  }) {
-                    Image(painter = painterResource(id = R.drawable.messagebutton), contentDescription = "", modifier = Modifier.height(30.dp))
-                }
-
-
-
-            }
-
-
-
-        }
-
-
-
-    }) {
-       // Text("Welcome to the Home Screen!", fontFamily = urbanistMedium)
-    }
-}
-
-
-@Composable
-fun MainScreen(activity: Activity) {
-
-
-    val navController = rememberNavController()
-
-
-    var selectedItemIndex by rememberSaveable {
-        mutableIntStateOf(0)
-    }
-
-    Scaffold(modifier = Modifier.fillMaxSize(),
-        bottomBar = {
-            val navBackStackEntry by navController.currentBackStackEntryAsState()
-            val currentRoute = navBackStackEntry?.destination?.route
-            if (shouldShowBottomBar(currentRoute)) {
-                BottomNavigationBar(navController, selectedItemIndex) {
-                    selectedItemIndex = it
-                }
-            }
-        }) { innerPadding ->
-        NavHost(navController = navController, startDestination = "home", Modifier.padding(innerPadding)) {
-            composable("home") {
-                HomeScreen(navController)
-            }
-            composable("search") {
-                SearchScreen(navController)
-            }
-            composable("newpost") {
-                CreatePostScreen()
-            }
-            composable("profile/{data}", arguments = listOf(navArgument("data"){type=
-                NavType.StringType}))
-            { backStackEntry ->
-                val data = backStackEntry.arguments?.getString("data") ?: ""
-                UserProfile()
-            }
-            composable("logout") {
-                Exit(activity = activity, navController = navController)
-            }
-            composable("chats") {
-                ChatHomeScreen(navController)
-            }
-
-            composable("MainChatScreen/{data}", arguments = listOf(navArgument("data"){type=
-                NavType.StringType}))
-            { backStackEntry ->
-                val data = backStackEntry.arguments?.getString("data") ?: ""
-                MainChatScreen(navController, data)
-            }
-
-
-        }
-    }
-
-}
-
-fun shouldShowBottomBar(currentRoute: String?): Boolean {
-
-    val routesWithoutBottomBar = listOf("chats","MainChatScreen/{data}","logout")
-    return !routesWithoutBottomBar.contains(currentRoute)
-}
-
-
-@Composable
-fun BottomNavigationBar(navController: NavController, selectedIndex: Int, onItemSelected: (Int) -> Unit) {
-    val items = listOf(
-        BottomNavigationItem(
-            title = "home",
-            selectedIcon = Icons.Default.Home,
-            unselectedIcon = Icons.Outlined.Home,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "search",
-            selectedIcon = Icons.Default.Search,
-            unselectedIcon = Icons.Outlined.Search,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "newpost",
-            selectedIcon = Icons.Default.AddCircle,
-            unselectedIcon = Icons.Outlined.AddCircle,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "profile",
-            selectedIcon = Icons.Default.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "logout",
-            selectedIcon = Icons.Default.ExitToApp,
-            unselectedIcon = Icons.Outlined.ExitToApp,
-            hasNews = false
-        )
-    )
-
-
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    NavigationBar(modifier = Modifier.height(80.dp), containerColor = colorResource(id = R.color.orange)) {
-
-        items.forEachIndexed { index, item ->
-
-            val isSelected = currentRoute == item.title
-
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = {
-                    onItemSelected(index)
-                    navController.navigate(item.title) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                icon = {
-                    BadgedBox(badge = {}) {
-                        Icon(
-                            imageVector = if (selectedIndex == index) item.selectedIcon else item.unselectedIcon,
-                            contentDescription = null
-                        )
-                    }
-                },
-                label = {})
-        }
-    }
-}
-
-data class BottomNavigationItem(
-    val title: String,
-    val selectedIcon: ImageVector,
-    val unselectedIcon: ImageVector,
-    val hasNews: Boolean,
-    val badgeCount: Int? = null
-)
