@@ -16,12 +16,18 @@ import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Edit
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -30,6 +36,11 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.example.orbitx.R
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.database
+import com.google.firebase.firestore.firestore
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -48,7 +59,7 @@ fun myProfileScreen(userProfile: UserProfile2) {
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0x85DB4A3E) // Background color for the top bar
+                    containerColor = colorResource(id = R.color.orangelight) // Background color for the top bar
                 )
             )
         }
@@ -148,6 +159,32 @@ fun ProfileHeader(imageUrl: String, size: Dp, modifier: Modifier = Modifier) {
 
 @Composable
 fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
+
+    var myusername by remember {
+        mutableStateOf("")
+    }
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId != null) {
+        LaunchedEffect(userId) {
+            Firebase.database.getReference("users").child(userId).child("username").get()
+                .addOnSuccessListener { snapshot ->
+                    val myuser = snapshot.getValue(String::class.java)?:"Loading..."
+                    if (myuser != null) {
+                        myusername = myuser
+
+
+                    }
+                }
+                .addOnFailureListener {
+
+
+                }
+        }
+    } else {
+        // Handle case where user is not logged in
+    }
+
+
     Column(
         modifier = Modifier
             .padding(8.dp)
@@ -155,7 +192,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
             .wrapContentWidth(Alignment.CenterHorizontally)// Ensure content width is correctly constrained
     ) {
         Text(
-            text = userProfile.username,
+            text = myusername,
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -248,7 +285,8 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
         }
         Spacer(modifier = Modifier.height(8.dp))
         Button(
-            onClick = { /* Handle post click */ },
+            onClick = {
+            /* Handle post click */ },
             shape = RoundedCornerShape(17.dp),
             modifier = Modifier
                 .height(40.dp)
@@ -261,7 +299,8 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Icons.Filled.ArrowDropDown,
                 contentDescription = "Arrow",
-                modifier = Modifier.size(30.dp)
+                modifier = Modifier
+                    .size(30.dp)
                     .padding(end = 2.dp) // Adjust size as needed
             )
             Text(
