@@ -1,4 +1,4 @@
-package com.example.chatbyme2.ui
+package com.example.orbitx.Views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -26,10 +26,10 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.chatbyme2.ChatRepository.getChatRoomId
+import com.example.orbitx.ChatRepository.ChatViewModel
+import com.example.orbitx.ChatRepository.User
+import com.example.orbitx.ChatRepository.getChatRoomId
 
-import com.example.chatbyme2.model.User
-import com.example.chatbyme2.viewmodel.ChatViewModel
 import com.example.orbitx.R
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
