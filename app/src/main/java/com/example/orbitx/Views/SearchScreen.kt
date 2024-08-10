@@ -62,7 +62,9 @@ fun SearchScreen(navController: NavController,modifier: Modifier = Modifier) {
                             .fillMaxWidth()
                             .padding(5.dp),
                         placeholder = { Text(text = "Search") },
-                        colors = OutlinedTextFieldDefaults.colors(Color.White),
+                        colors = OutlinedTextFieldDefaults.colors(Color.Black),
+                        shape = TextFieldDefaults.shape,
+
 
 
 
