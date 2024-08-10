@@ -1,4 +1,4 @@
-package com.example.orbitx.views
+package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
 import android.app.Activity
@@ -40,16 +40,19 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import coil.compose.rememberImagePainter
-import com.example.chatbyme2.Screens.MainChatScreen
-import com.example.chatbyme2.ui.ChatHomeScreen
+
 import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
 import com.example.orbitx.model.BottomNavigationItem
 import androidx.lifecycle.viewmodel.compose.viewModel
+import com.example.orbitx.HomeScreen
+import com.example.orbitx.Navigation.BottomNavigationBar
+import com.example.orbitx.Views.ChatHomeScreen
 import com.example.orbitx.Views.CreatePostScreen
 import com.example.orbitx.Views.Exit
+import com.example.orbitx.Views.MainChatScreen
 import com.example.orbitx.Views.SearchScreen
-import com.example.orbitx.Views.UserProfile
+//import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.model.Posts
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -57,14 +60,14 @@ import com.example.orbitx.model.Posts
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
 
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
-            Column(
+            Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background(Brush.verticalGradient(listOf(Color(0xFFF85A4F), Color(0xFFE49E99))))
-                    .padding(10.dp)
+                    .background( Brush.verticalGradient(listOf(Color(0xFFF85A4F), Color(0xFFE49E99))))
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -77,133 +80,105 @@ fun HomeScreen(navController: NavController) {
                         modifier = Modifier
                             .padding(10.dp)
                             .weight(1f),
-                        fontSize = 28.sp,
+                        fontSize = 25.sp,
                         fontWeight = FontWeight.Bold,
                         fontFamily = urbanistMedium,
                         color = Color.Black
                     )
-                    IconButton(onClick = { }) {
+
+                    IconButton(onClick = { navController.navigate("chats") }) {
                         Image(
                             painter = painterResource(id = R.drawable.messagebutton),
                             contentDescription = "",
-                            modifier = Modifier.height(30.dp).clip(CircleShape)
+                            modifier = Modifier.height(30.dp)
                         )
                     }
                 }
             }
         }
-    ) { innerPadding ->
-        Column(modifier = Modifier.padding(innerPadding)) {
+    ) {
+        Box(modifier = Modifier.padding(top=60.dp)) {
+
             InstagramFeed()
         }
+
     }
 }
 
 @Composable
 fun MainScreen(activity: Activity) {
     val navController = rememberNavController()
-    var selectedItemIndex by rememberSaveable { mutableStateOf(0) }
+    var selectedItemIndex by rememberSaveable {
+        mutableIntStateOf(0)
+    }
 
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         bottomBar = {
             val navBackStackEntry by navController.currentBackStackEntryAsState()
             val currentRoute = navBackStackEntry?.destination?.route
-            if (shouldShowBottomBar(currentRoute)) {
+            if (com.example.orbitx.Navigation.shouldShowBottomBar(currentRoute)) {
                 BottomNavigationBar(navController, selectedItemIndex) {
                     selectedItemIndex = it
                 }
             }
         }
-
     ) { innerPadding ->
-        NavHost(navController = navController, startDestination = "home", Modifier.padding(innerPadding)) {
-            composable("home") { HomeScreen(navController) }
-            composable("search") { SearchScreen(navController) }
-            composable("newpost") { CreatePostScreen() }
-            composable("profile/{data}", arguments = listOf(navArgument("data") { type = NavType.StringType })) { backStackEntry ->
-                val data = backStackEntry.arguments?.getString("data") ?: ""
-                UserProfile()
+        NavHost(
+            navController = navController,
+            startDestination = "home",
+            Modifier.padding(innerPadding)
+        ) {
+            composable("home") {
+                HomeScreen(navController)
             }
-            composable("logout") { Exit(activity = activity, navController = navController) }
-            composable("chats") { ChatHomeScreen(navController) }
+            composable("search") {
+                SearchScreen(navController)
+            }
+            composable("newpost") {
+                CreatePostScreen()
+            }
+            composable("profile") {
+                myProfileScreen(userProfile = UserProfile2(
+                    profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
+                    username = "Shreya_12",
+                    bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
+                    isFollowing = true,
+                    postCount = 5,
+                    followerCount = 30,
+                    followingCount = 12
+                )
+                )
+            }
+            composable("logout") {
+                Exit(activity = activity, navController = navController)
+            }
+            composable("chats") {
+                ChatHomeScreen(navController)
+            }
             composable("MainChatScreen/{data}", arguments = listOf(navArgument("data") { type = NavType.StringType })) { backStackEntry ->
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 MainChatScreen(navController, data)
             }
+
+            composable("otheruserprofile/{data}", arguments = listOf(navArgument("data") { type = NavType.StringType })) { backStackEntry ->
+                val data = backStackEntry.arguments?.getString("data") ?: ""
+                otherUserProfileSection(data=data,userProfile = UserProfile(
+                    profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
+                    username = "Alex",
+                    bio = "Software engineer and cat lover",
+                    isFollowing = true,
+                    postCount = 10,
+                    followerCount = 1000,
+                    followingCount = 500
+                )
+                )
+            }
         }
     }
 }
 
-fun shouldShowBottomBar(currentRoute: String?): Boolean {
-    val routesWithoutBottomBar = listOf("chats", "MainChatScreen/{data}", "logout")
-    return !routesWithoutBottomBar.contains(currentRoute)
-}
 
-@Composable
-fun BottomNavigationBar(navController: NavController, selectedIndex: Int, onItemSelected: (Int) -> Unit) {
-    val items = listOf(
-        BottomNavigationItem(
-            title = "home",
-            selectedIcon = Icons.Default.Home,
-            unselectedIcon = Icons.Outlined.Home,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "search",
-            selectedIcon = Icons.Default.Search,
-            unselectedIcon = Icons.Outlined.Search,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "newpost",
-            selectedIcon = Icons.Default.AddCircle,
-            unselectedIcon = Icons.Outlined.AddCircle,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "profile",
-            selectedIcon = Icons.Default.Person,
-            unselectedIcon = Icons.Outlined.Person,
-            hasNews = false
-        ),
-        BottomNavigationItem(
-            title = "logout",
-            selectedIcon = Icons.Default.ExitToApp,
-            unselectedIcon = Icons.Outlined.ExitToApp,
-            hasNews = false
-        )
-    )
-
-    val navBackStackEntry by navController.currentBackStackEntryAsState()
-    val currentRoute = navBackStackEntry?.destination?.route
-
-    NavigationBar(modifier = Modifier.height(80.dp), containerColor = colorResource(id = R.color.orange)) {
-        items.forEachIndexed { index, item ->
-            val isSelected = currentRoute == item.title
-            NavigationBarItem(
-                selected = isSelected,
-                onClick = {
-                    onItemSelected(index)
-                    navController.navigate(item.title) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
-                    }
-                },
-                icon = {
-                    BadgedBox(badge = {}) {
-                        Icon(
-                            imageVector = if (selectedIndex == index) item.selectedIcon else item.unselectedIcon,
-                            contentDescription = null
-                        )
-                    }
-                },
-                label = {}
-            )
-        }
-    }
-}
 
 @Composable
 fun InstagramPost(

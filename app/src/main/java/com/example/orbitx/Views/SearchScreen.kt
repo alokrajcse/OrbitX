@@ -86,7 +86,7 @@ fun SearchScreen(navController: NavController,modifier: Modifier = Modifier) {
                             .padding(vertical = 8.dp)
                             .clickable {
 
-                                navController.navigate("profile/${person.parent}")
+                                navController.navigate("otheruserprofile/${person.parent}")
                                 println("UUUID:${person.parent}")
                             },
 
