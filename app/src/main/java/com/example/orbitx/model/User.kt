@@ -1,8 +1,9 @@
-package com.example.chatbyme2.model
+package com.example.orbitx.ChatRepository
+import com.google.firebase.auth.FirebaseAuth
 
 data class User(
-    val email: String,
-    val username: String,
-    val userId: String
+    val email: String="",
+    val username: String="",
+    val userId: String=""
 
 )

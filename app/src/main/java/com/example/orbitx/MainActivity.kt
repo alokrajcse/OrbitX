@@ -8,11 +8,13 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
+import androidx.compose.material.TextField
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ExitToApp
@@ -25,6 +27,7 @@ import androidx.compose.material.icons.outlined.Home
 import androidx.compose.material.icons.outlined.Person
 import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.BadgedBox
+import androidx.compose.material3.Button
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
@@ -34,6 +37,8 @@ import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableIntStateOf
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
@@ -56,17 +61,22 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
-import com.example.chatbyme2.Screens.MainChatScreen
-import com.example.chatbyme2.ui.ChatHomeScreen
+import com.example.orbitx.Views.ChatHomeScreen
+
 
 import com.example.orbitx.Views.CreatePostScreen
 import com.example.orbitx.Views.Exit
+import com.example.orbitx.Views.MainChatScreen
 import com.example.orbitx.Views.SearchScreen
 import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.ui.theme.OrbitXTheme
 import com.example.orbitx.Views.SignInScreen
 import com.example.orbitx.Views.SignUpScreen
-import com.example.orbitx.Views.UserProfileSection
+
+import com.example.orbitx.Views.otherUserProfileSection
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.firestore
 
 
 class MainActivity : ComponentActivity() {
@@ -116,6 +126,9 @@ fun AppNavigation(activity: Activity) {
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
+    var texttest by remember {
+        mutableStateOf("")
+    }
 
 
 
@@ -151,9 +164,12 @@ fun HomeScreen(navController: NavController) {
 
 
     }) {
+
+
+    }
        // Text("Welcome to the Home Screen!", fontFamily = urbanistMedium)
     }
-}
+
 
 
 @Composable
@@ -185,13 +201,13 @@ fun MainScreen(activity: Activity) {
                 SearchScreen(navController)
             }
             composable("newpost") {
-                CreatePostScreen(modifier = Modifier.padding(innerPadding))
+                CreatePostScreen()
             }
             composable("profile/{data}", arguments = listOf(navArgument("data"){type=
                 NavType.StringType}))
             { backStackEntry ->
                 val data = backStackEntry.arguments?.getString("data") ?: ""
-                UserProfileSection(userProfile = UserProfile(
+                otherUserProfileSection(data=data,userProfile = UserProfile(
                     profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
                     username = "Alex",
                     bio = "Software engineer and cat lover",
@@ -229,6 +245,7 @@ fun shouldShowBottomBar(currentRoute: String?): Boolean {
 
 
 @Composable
+
 fun BottomNavigationBar(navController: NavController, selectedIndex: Int, onItemSelected: (Int) -> Unit) {
     val items = listOf(
         BottomNavigationItem(
@@ -263,25 +280,27 @@ fun BottomNavigationBar(navController: NavController, selectedIndex: Int, onItem
         )
     )
 
-
-
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentRoute = navBackStackEntry?.destination?.route
 
     NavigationBar(modifier = Modifier.height(80.dp), containerColor = colorResource(id = R.color.orange)) {
 
         items.forEachIndexed { index, item ->
-
             val isSelected = currentRoute == item.title
 
             NavigationBarItem(
                 selected = isSelected,
                 onClick = {
-                    onItemSelected(index)
-                    navController.navigate(item.title) {
-                        popUpTo(navController.graph.startDestinationId) { saveState = true }
-                        launchSingleTop = true
-                        restoreState = true
+                    if (currentRoute == item.title) {
+
+                        navController.popBackStack(item.title, inclusive = false)
+                    } else {
+                        onItemSelected(index)
+                        navController.navigate(item.title) {
+                            popUpTo(navController.graph.startDestinationId) { saveState = true }
+                            launchSingleTop = true
+                            restoreState = true
+                        }
                     }
                 },
                 icon = {
@@ -292,10 +311,13 @@ fun BottomNavigationBar(navController: NavController, selectedIndex: Int, onItem
                         )
                     }
                 },
-                label = {})
+                label = {}
+            )
         }
     }
 }
+
+
 
 data class BottomNavigationItem(
     val title: String,

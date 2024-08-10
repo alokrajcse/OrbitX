@@ -50,7 +50,7 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 
 @Composable
-fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel(), modifier: Modifier) {
+fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel()) {
     val text by viewModel.text.collectAsState()
     val imageUri by viewModel.imageUri.collectAsState()
     val context = LocalContext.current
@@ -83,12 +83,12 @@ fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel(), modifier: Mod
         uri?.let { viewModel.onImageSelected(it) }
     }
     Surface(color = Color.White,
-        modifier = Modifier.padding(top=40.dp)
+        modifier = Modifier.padding(top=0.dp)
             .fillMaxSize()) {
         Column () {
             TopBar(
                 onBackPressed = { /* Handle back press action here */ },
-                onPostClicked = { viewModel.createPost(context) }
+                onPostClicked = { viewModel.createPost() }
             )
             Row(
                 Modifier
@@ -98,9 +98,9 @@ fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel(), modifier: Mod
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(authorAvatarUrl)
+                        .data(authorAvatarUrl) //avatarAuthorUrl
                         .crossfade(true)
-                        .placeholder(R.drawable.ic_placeholder)
+                        .placeholder(R.drawable.avataricon)
                         .build(),
                     contentDescription = null,
                     modifier = Modifier
@@ -416,7 +416,8 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
             color = Color(237, 222, 221)
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(237, 222, 221)) ){
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
+        ) {
             Text("Post")
         }
     }

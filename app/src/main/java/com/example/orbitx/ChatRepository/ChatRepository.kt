@@ -1,4 +1,4 @@
-package com.example.chatbyme2.repository
+package com.example.orbitx.ChatRepository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData

@@ -1,9 +1,7 @@
 package com.example.orbitx.ui.JiteshxScreen
 
-import android.content.Context
 import android.net.Uri
 import android.util.Log
-import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.example.orbitx.model.Post
 import com.example.orbitx.model.PostRepository
@@ -12,7 +10,6 @@ import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import java.util.UUID
-
 
 class CreatePostViewModel : ViewModel() {
     private val repository: PostRepository = PostRepository(FirebaseFirestore.getInstance())
@@ -27,6 +24,13 @@ class CreatePostViewModel : ViewModel() {
     val imageUrl: StateFlow<String> = _imageUrl
     val isPostCreated: StateFlow<Boolean> = _isPostCreated
 
+    enum class PostCreationStatus {
+        Idle, Success, Failure, UploadFailure, EmptyFields
+    }
+
+    private val _postCreationStatus = MutableStateFlow(PostCreationStatus.Idle)
+    val postCreationStatus: StateFlow<PostCreationStatus> = _postCreationStatus
+
     fun onTextChanged(newText: String) {
         _text.value = newText
     }
@@ -35,20 +39,24 @@ class CreatePostViewModel : ViewModel() {
         _imageUri.value = uri
     }
 
-    fun createPost(context: Context) {
+    fun createPost() {
         if (text.value.isNotBlank() && imageUri.value != null) {
             uploadImageToFirebase(imageUri.value!!) { imageUrl ->
                 val post = Post(text.value, imageUrl)
                 repository.createPost(post)
                     .addOnSuccessListener {
-                        Toast.makeText(context, "Post created successfully", Toast.LENGTH_SHORT).show()
+                        _postCreationStatus.value = PostCreationStatus.Success
+                        _text.value = ""
+                        _imageUri.value = null
+                        _imageUrl.value = ""
+                        _isPostCreated.value = true
                     }
                     .addOnFailureListener {
-                        Toast.makeText(context, "Failed to create post", Toast.LENGTH_SHORT).show()
+                        _postCreationStatus.value = PostCreationStatus.Failure
                     }
             }
         } else {
-            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            _postCreationStatus.value = PostCreationStatus.EmptyFields
         }
     }
 
@@ -62,8 +70,9 @@ class CreatePostViewModel : ViewModel() {
                     onSuccess(downloadUrl.toString())
                 }
             }
-            .addOnFailureListener {
-                Log.e("UploadError", "Failed to upload image", it)
+            .addOnFailureListener { exception ->
+                Log.e("UploadError", "Failed to upload image", exception)
+                _postCreationStatus.value = PostCreationStatus.UploadFailure
             }
     }
 }
