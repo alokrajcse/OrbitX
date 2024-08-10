@@ -185,7 +185,7 @@ fun MainScreen(activity: Activity) {
                 SearchScreen(navController)
             }
             composable("newpost") {
-                CreatePostScreen()
+                CreatePostScreen(modifier = Modifier.padding(innerPadding))
             }
             composable("profile/{data}", arguments = listOf(navArgument("data"){type=
                 NavType.StringType}))
