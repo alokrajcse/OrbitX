@@ -3,6 +3,8 @@ package com.example.orbitx.Views
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -80,9 +82,17 @@ fun FirebaseUI(navController: NavHostController, viewModel: ChatViewModel = view
 
         Spacer(modifier = Modifier.height(0.dp))
 
-        users.forEachIndexed { index, user ->
-            ChatItem(index = index, user = user, navController = navController, viewModel = viewModel)
+
+
+        LazyColumn {
+
+            itemsIndexed(users) { index, user ->
+                ChatItem(index = index, user = user, navController = navController, viewModel = viewModel)
+            }
         }
+
+
+
     }
 }
 
