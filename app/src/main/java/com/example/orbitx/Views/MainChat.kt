@@ -1,4 +1,4 @@
-package com.example.chatbyme2.Screens
+package com.example.orbitx.Views
 
 import android.net.Uri
 import androidx.activity.compose.rememberLauncherForActivityResult
@@ -30,9 +30,9 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
 import coil.request.ImageRequest
-import com.example.chatbyme2.ChatRepository.getChatRoomId
+import com.example.orbitx.ChatRepository.MessageCard
+import com.example.orbitx.ChatRepository.getChatRoomId
 
-import com.example.chatbyme2.model.MessageCard
 import com.example.orbitx.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot

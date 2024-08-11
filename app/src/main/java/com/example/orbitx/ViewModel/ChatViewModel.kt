@@ -1,11 +1,9 @@
-
-package com.example.chatbyme2.viewmodel
+package com.example.orbitx.ChatRepository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.chatbyme2.model.User
-import com.example.chatbyme2.repository.ChatRepository
+
 import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.ValueEventListener
@@ -39,3 +37,4 @@ class ChatViewModel : ViewModel() {
 
     fun getLastTime(roomId: String): LiveData<String> = ChatRepository.getLastTime(roomId)
 }
+
