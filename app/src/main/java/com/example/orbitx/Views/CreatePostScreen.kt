@@ -42,20 +42,23 @@ import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.compose.rememberNavController
 import com.example.orbitx.model.JiteshxUser
 import com.example.orbitx.ui.JiteshxScreen.CreatePostViewModel
 import com.google.firebase.Firebase
 import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
+import androidx.navigation.NavController
 
 @Composable
-fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel()) {
+fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel = viewModel(), modifier: Modifier) {
     val text by viewModel.text.collectAsState()
     val imageUri by viewModel.imageUri.collectAsState()
+    val creatingPost by viewModel.isPostCreated.collectAsState()
     val context = LocalContext.current
     val db = Firebase.firestore
-    val postRef = db.collection("Users").document("vVDzSYUgxnw62SVdBF8m") // replace with the actual post ID
+    val postRef = db.collection("Users").document("A43t07amgUmkKxz2zVOK") // replace with the actual post ID
     var authorAvatarUrl by remember { mutableStateOf("") }
     var post by remember { mutableStateOf(JiteshxUser(
         authorName = "",
@@ -65,14 +68,20 @@ fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel()) {
 
     LaunchedEffect(Unit) {
         launch {
-            val postSnapshot = postRef.get().await()
-            if (postSnapshot.exists()) {
-                authorAvatarUrl = postSnapshot.get("authorAvatarUrl") as String
-                post = JiteshxUser(
-                    authorName = postSnapshot.get("authorName") as String,
-                    authorAvatarUrl = postSnapshot.get("authorAvatarUrl") as String,
-                    timestamp = post.timestamp
-                )
+            try {
+                val postSnapshot = postRef.get().await()
+                if (postSnapshot.exists()) {
+                    authorAvatarUrl = postSnapshot.get("authorAvatarUrl") as String
+                    post = JiteshxUser(
+                        authorName = postSnapshot.get("authorName") as String,
+                        authorAvatarUrl = postSnapshot.get("authorAvatarUrl") as String,
+                        timestamp = post.timestamp
+                    )
+                } else {
+                    Log.d("CreatePostScreen", "Post document does not exist")
+                }
+            } catch (e: Exception) {
+                Log.e("CreatePostScreen", "Error fetching post data", e)
             }
         }
     }
@@ -83,13 +92,29 @@ fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel()) {
         uri?.let { viewModel.onImageSelected(it) }
     }
     Surface(color = Color.White,
-        modifier = Modifier.padding(top=0.dp)
+        modifier = Modifier.padding(top=40.dp)
             .fillMaxSize()) {
         Column () {
             TopBar(
-                onBackPressed = { /* Handle back press action here */ },
-                onPostClicked = { viewModel.createPost() }
+                onBackPressed = {navController.navigateUp()},
+                onPostClicked = { viewModel.createPost(context) }
             )
+            if (creatingPost) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp)
+                        .background(Color.Gray.copy(alpha = 0.5f)),
+                    verticalArrangement = Arrangement.Center,
+                    horizontalAlignment = Alignment.CenterHorizontally
+                ) {
+                    LinearProgressIndicator(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(horizontal = 16.dp)
+                    )
+                }
+            }
             Row(
                 Modifier
                     .fillMaxWidth()
@@ -98,9 +123,9 @@ fun CreatePostScreen(viewModel: CreatePostViewModel = viewModel()) {
             ) {
                 AsyncImage(
                     model = ImageRequest.Builder(LocalContext.current)
-                        .data(authorAvatarUrl) //avatarAuthorUrl
+                        .data(authorAvatarUrl)
                         .crossfade(true)
-                        .placeholder(R.drawable.avataricon)
+                        .placeholder(R.drawable.ic_placeholder)
                         .build(),
                     contentDescription = null,
                     modifier = Modifier
@@ -416,8 +441,7 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
             color = Color(237, 222, 221)
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black)
-        ) {
+            colors = ButtonDefaults.buttonColors(containerColor = Color(237, 222, 221)) ){
             Text("Post")
         }
     }
