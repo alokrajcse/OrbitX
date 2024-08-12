@@ -11,21 +11,23 @@ import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import java.util.UUID
 
 
 class CreatePostViewModel : ViewModel() {
+    private val _isPostCreated = MutableStateFlow(false)
+    val isPostCreated: StateFlow<Boolean> = _isPostCreated.asStateFlow()
     private val repository: PostRepository = PostRepository(FirebaseFirestore.getInstance())
-
     private val _text = MutableStateFlow("")
     private val _imageUri = MutableStateFlow<Uri?>(null)
     private val _imageUrl = MutableStateFlow("")
-    private val _isPostCreated = MutableStateFlow(false)
+
 
     val text: StateFlow<String> = _text
     val imageUri: StateFlow<Uri?> = _imageUri
     val imageUrl: StateFlow<String> = _imageUrl
-    val isPostCreated: StateFlow<Boolean> = _isPostCreated
+
 
     fun onTextChanged(newText: String) {
         _text.value = newText
@@ -36,19 +38,25 @@ class CreatePostViewModel : ViewModel() {
     }
 
     fun createPost(context: Context) {
-        if (text.value.isNotBlank() && imageUri.value != null) {
-            uploadImageToFirebase(imageUri.value!!) { imageUrl ->
-                val post = Post(text.value, imageUrl)
-                repository.createPost(post)
-                    .addOnSuccessListener {
-                        Toast.makeText(context, "Post created successfully", Toast.LENGTH_SHORT).show()
-                    }
-                    .addOnFailureListener {
-                        Toast.makeText(context, "Failed to create post", Toast.LENGTH_SHORT).show()
-                    }
-            }
-        } else {
+        _isPostCreated.value = true
+        if (text.value.isBlank() || imageUri.value == null) {
             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+            _isPostCreated.value = false
+            return
+        }
+
+        uploadImageToFirebase(imageUri.value!!) { imageUrl ->
+            val post = Post(text.value, imageUrl)
+            repository.createPost(post)
+                .addOnSuccessListener {
+                    Toast.makeText(context, "Post created successfully", Toast.LENGTH_SHORT).show()
+                }
+                .addOnFailureListener {
+                    Toast.makeText(context, "Failed to create post", Toast.LENGTH_SHORT).show()
+                }
+                .addOnCompleteListener {
+                    _isPostCreated.value = false
+                }
         }
     }
 
