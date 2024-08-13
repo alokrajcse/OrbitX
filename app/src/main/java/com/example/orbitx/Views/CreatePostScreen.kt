@@ -99,6 +99,11 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                 onBackPressed = {navController.navigateUp()},
                 onPostClicked = { viewModel.createPost(context) }
             )
+            Divider(
+                color = Color.LightGray, // Set the color of the divider
+                thickness = 1.dp,   // Set the thickness of the divider
+
+            )
             if (creatingPost) {
                 Column(
                     modifier = Modifier
@@ -424,7 +429,7 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color(231, 107, 99))
+            .background(Color.White)
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -437,12 +442,15 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
         }
         Text(
             text = "Create Post",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Medium),
-            color = Color(237, 222, 221)
+            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 18.sp),
+            color = Color.Black
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = Color(237, 222, 221)) ){
-            Text("Post")
+            colors = ButtonDefaults.buttonColors(containerColor = Color.White) ){
+            Text("Post",
+                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 16.5.sp),
+                color = Color(249,97,47)
+            )
         }
     }
 }
