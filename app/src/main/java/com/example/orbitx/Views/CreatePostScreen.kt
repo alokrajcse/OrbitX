@@ -92,7 +92,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
         uri?.let { viewModel.onImageSelected(it) }
     }
     Surface(color = Color.White,
-        modifier = Modifier.padding(top=40.dp)
+        modifier = Modifier.padding(top=0.dp)
             .fillMaxSize()) {
         Column () {
             TopBar(
