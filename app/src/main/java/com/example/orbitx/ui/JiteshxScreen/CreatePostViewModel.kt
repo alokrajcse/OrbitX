@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.lifecycle.ViewModel
 import com.example.orbitx.model.Post
 import com.example.orbitx.model.PostRepository
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.storage.FirebaseStorage
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -46,7 +47,17 @@ class CreatePostViewModel : ViewModel() {
         }
 
         uploadImageToFirebase(imageUri.value!!) { imageUrl ->
-            val post = Post(text.value, imageUrl)
+            val post = Post(
+                text = text.value,
+                imageUrl = imageUrl,
+                ownerUid = FirebaseAuth.getInstance().currentUser!!.uid, // Get the current user's UID
+                timestamp = System.currentTimeMillis(), // Get the current timestamp
+                likesCount = 0, // Initialize likes count to 0
+                commentsCount = 0, // Initialize comments count to 0
+                comments = emptyList(), // Initialize comments list to empty
+                likes = emptyList(), // Initialize likes list to empty
+                location = null // Initialize location to null
+            )
             repository.createPost(post)
                 .addOnSuccessListener {
                     Toast.makeText(context, "Post created successfully", Toast.LENGTH_SHORT).show()
@@ -59,7 +70,6 @@ class CreatePostViewModel : ViewModel() {
                 }
         }
     }
-
     private fun uploadImageToFirebase(uri: Uri, onSuccess: (String) -> Unit) {
         val storageReference = FirebaseStorage.getInstance().reference
         val imageRef = storageReference.child("images/${UUID.randomUUID()}.jpg")
