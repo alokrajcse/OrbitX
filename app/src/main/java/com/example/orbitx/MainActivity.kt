@@ -42,6 +42,7 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.orbitx.ChatRepository.fetchcurrentuid
 import com.example.orbitx.Navigation.AppNavigation
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.Navigation.shouldShowBottomBar
@@ -62,6 +63,7 @@ import com.example.orbitx.Views.otherUserProfileSection
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
+
         super.onCreate(savedInstanceState)
         setContent {
             OrbitXTheme {
@@ -89,7 +91,14 @@ fun HomeScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background( Brush.verticalGradient(listOf(Color(0xFFF85A4F), Color(0xFFE49E99))))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFFF85A4F),
+                                Color(0xFFE49E99)
+                            )
+                        )
+                    )
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
