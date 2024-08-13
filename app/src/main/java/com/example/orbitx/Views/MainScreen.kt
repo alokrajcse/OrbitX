@@ -136,7 +136,7 @@ fun MainScreen(activity: Activity) {
                 SearchScreen(navController)
             }
             composable("newpost") {
-                CreatePostScreen()
+                CreatePostScreen(navController,modifier = Modifier.padding(innerPadding))
             }
             composable("profile") {
                 myProfileScreen(userProfile = UserProfile2(
