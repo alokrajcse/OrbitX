@@ -2,6 +2,7 @@ package com.example.orbitx.Views
 
 import android.net.Uri
 import android.util.Log
+import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
@@ -12,6 +13,10 @@ import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.ModalBottomSheetLayout
+import androidx.compose.material.ModalBottomSheetState
+import androidx.compose.material.ModalBottomSheetValue
 import androidx.compose.material.icons.Icons
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
@@ -19,10 +24,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.*
+import androidx.compose.material3.SheetValue.Hidden
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.rememberCoroutineScope
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
@@ -42,7 +50,6 @@ import java.util.Date
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.lifecycle.viewmodel.compose.viewModel
-import androidx.navigation.compose.rememberNavController
 import com.example.orbitx.model.JiteshxUser
 import com.example.orbitx.ui.JiteshxScreen.CreatePostViewModel
 import com.google.firebase.Firebase
@@ -51,8 +58,9 @@ import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.navigation.NavController
 
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
-fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel = viewModel(), modifier: Modifier) {
+fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel = viewModel(), modifier: Modifier,) {
     val text by viewModel.text.collectAsState()
     val imageUri by viewModel.imageUri.collectAsState()
     val creatingPost by viewModel.isPostCreated.collectAsState()
@@ -65,6 +73,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
         authorAvatarUrl = "",
         timestamp = System.currentTimeMillis() / 1000,
     )) }
+    var focusedContainerColor by remember { mutableStateOf(Color(237, 222, 221)) }
 
     LaunchedEffect(Unit) {
         launch {
@@ -86,152 +95,203 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
         }
     }
 
-
+    val bottomSheetState = rememberModalBottomSheetState(false, { true })
+    val coroutineScope = rememberCoroutineScope()
+    var openBottomSheet by rememberSaveable { mutableStateOf(true) }
     // Activity result launcher to handle the image picking
     val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
         uri?.let { viewModel.onImageSelected(it) }
     }
-    Surface(color = Color.White,
-        modifier = Modifier.padding(top=0.dp)
-            .fillMaxSize()) {
-        Column () {
-            TopBar(
-                onBackPressed = {navController.navigateUp()},
-                onPostClicked = { viewModel.createPost(context) }
-            )
-            Divider(
-                color = Color.LightGray, // Set the color of the divider
-                thickness = 1.dp,   // Set the thickness of the divider
-
-            )
-            if (creatingPost) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(16.dp)
-                        .background(Color.Gray.copy(alpha = 0.5f)),
-                    verticalArrangement = Arrangement.Center,
-                    horizontalAlignment = Alignment.CenterHorizontally
-                ) {
-                    LinearProgressIndicator(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp)
-                    )
-                }
+    if (openBottomSheet) {
+        ModalBottomSheetLayout(
+            sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded),
+            scrimColor = Color.Transparent,
+            sheetContent = {
+                PostOptionsBottomSheet(imagePickerLauncher = imagePickerLauncher,
+                    imageUri = imageUri,
+                    onOptionSelected = { option ->
+                        // Handle option selection if needed
+                        coroutineScope.launch {
+                            bottomSheetState.hide()
+                        }
+                    },
+                    onColorSelected = { color ->
+                        focusedContainerColor = color
+                    })
             }
-            Row(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(8.dp),
-                verticalAlignment = Alignment.CenterVertically
+        ) {
+            Surface(
+                color = Color.White,
+                modifier = Modifier.padding(top = 0.dp)
+                    .fillMaxSize()
             ) {
-                AsyncImage(
-                    model = ImageRequest.Builder(LocalContext.current)
-                        .data(authorAvatarUrl)
-                        .crossfade(true)
-                        .placeholder(R.drawable.ic_placeholder)
-                        .build(),
-                    contentDescription = null,
-                    modifier = Modifier
-                        .size(40.dp)
-                        .clip(CircleShape)
-                )
-                Column(
-                    Modifier
-                        .weight(1f)
-                ) {
-                    Text(
-                        post.authorName,
-                        style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium)
-                        ,
-                        color = Color.Black
+                Column() {
+                    TopBar(
+                        onBackPressed = { navController.navigateUp() },
+                        onPostClicked = { viewModel.createPost(context) }
                     )
-                    val today = remember {
-                        Date()
+                    Divider(
+                        color = Color.LightGray, // Set the color of the divider
+                        thickness = 1.dp,   // Set the thickness of the divider
+
+                    )
+                    if (creatingPost) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                                .background(Color.Gray.copy(alpha = 0.5f)),
+                            verticalArrangement = Arrangement.Center,
+                            horizontalAlignment = Alignment.CenterHorizontally
+                        ) {
+                            LinearProgressIndicator(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(horizontal = 16.dp)
+                            )
+                        }
                     }
-                    Text(
-                        post.timestamp?.let { dateLabel(timestamp = it, today = today) } ?: "",
-                        color = Color.DarkGray
+                    Row(
+                        Modifier
+                            .fillMaxWidth()
+                            .padding(8.dp),
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        AsyncImage(
+                            model = ImageRequest.Builder(LocalContext.current)
+                                .data(authorAvatarUrl)
+                                .crossfade(true)
+                                .placeholder(R.drawable.ic_placeholder)
+                                .build(),
+                            contentDescription = null,
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                        )
+                        Column(
+                            Modifier
+                                .weight(1f)
+                        ) {
+                            Text(
+                                post.authorName,
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium),
+                                color = Color.Black
+                            )
+                            val today = remember {
+                                Date()
+                            }
+                            Text(
+                                post.timestamp?.let { dateLabel(timestamp = it, today = today) }
+                                    ?: "",
+                                color = Color.DarkGray
 
-                    )
-                }
-                IconButton(onClick = { }) {
-                    Icon(
-                        imageVector = Icons.Filled.MoreVert,
-                        contentDescription = stringResource(R.string.menu),
-                        tint = Color.Black
-                    )
-                }
-            }
-            Spacer(Modifier.height(8.dp))
-            var focusedContainerColor by remember { mutableStateOf(Color(237, 222, 221))}
+                            )
+                        }
+                        IconButton(onClick =  { coroutineScope.launch { bottomSheetState.show() } }) {
+                            Icon(
+                                imageVector = Icons.Filled.MoreVert,
+                                contentDescription = stringResource(R.string.menu),
+                                tint = Color.Black
+                            )
+                        }
+                    }
+                    Spacer(Modifier.height(8.dp))
 
-            TextField(value = text, onValueChange ={viewModel.onTextChanged(it)},
-                placeholder = {Text(text = "What's on your mind?",style = TextStyle(
-                    fontSize = 25.sp) , // Change font size here
-                    color = Color.Gray
-                )},
-                colors = TextFieldDefaults.colors(unfocusedContainerColor = Color.White,
-                    focusedContainerColor = focusedContainerColor),
-                modifier = Modifier
-                    .background(Color.Yellow)
-                    .fillMaxWidth()
-                    .height(300.dp))
-            Spacer(Modifier.height(1.dp))
-            ImagePicker(
-                imageUri = imageUri,
-                onImageSelected = { imagePickerLauncher.launch("image/*") }
-            )
-            Spacer(Modifier.height(1.dp))
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp),
-                contentAlignment = Alignment.Center
-            ){var showColorPicker by remember { mutableStateOf(false) }
-                ExtendedFloatingActionButton(
-                    onClick = { showColorPicker = true },
-                    icon = {Box(Modifier.size(24.dp)) {
-                        val myImage: Painter = painterResource(id = R.drawable.color)
-                        Image(painter = myImage, contentDescription = "Edit")
-                    }},
-                    text = { Text(text = "Background Colour",style = TextStyle(
-                        fontSize = 20.sp, // Change font size here
-                        color = Color.Black
-                    )) },
-                    shape = RoundedCornerShape(0.dp),
-                    modifier = Modifier
-                        .fillMaxSize(),
-                    containerColor = Color.White,
-                )
-
-                // Show color picker dialog
-                if (showColorPicker) {
-                    ColorPickerDialog(
-                        onColorSelected = { color ->
-                            focusedContainerColor = color
-                            showColorPicker = false
+                    TextField(
+                        value = text, onValueChange = { viewModel.onTextChanged(it) },
+                        placeholder = {
+                            Text(
+                                text = "What's on your mind?", style = TextStyle(
+                                    fontSize = 25.sp
+                                ), // Change font size here
+                                color = Color.Gray
+                            )
                         },
-                        onDismissRequest = { showColorPicker = false }
+                        colors = TextFieldDefaults.colors(
+                            unfocusedContainerColor = Color.White,
+                            focusedContainerColor = focusedContainerColor
+                        ),
+                        modifier = Modifier
+                            .background(Color.Yellow)
+                            .fillMaxWidth()
+                            .height(300.dp)
                     )
+
 
                 }
             }
-            Spacer(Modifier.height(1.dp))
-            Location()
-            Spacer(Modifier.height(1.dp))
-            Hastag()
-            Spacer(Modifier.height(1.dp))
-            Activity()
-            Spacer(Modifier.height(1.dp))
-            Texts()
-            Spacer(Modifier.height(1.dp))
-            Link()
-
         }
     }
 }
+
+@Composable
+fun PostOptionsBottomSheet(
+    imageUri: Uri?,
+    imagePickerLauncher: ManagedActivityResultLauncher<String, Uri?>,
+    onOptionSelected: (String) -> Unit,
+    onColorSelected:  (Color) -> Unit
+) {
+    Column(modifier = Modifier.padding(16.dp)) {
+        Spacer(Modifier.height(1.dp))
+        ImagePicker(
+            imageUri = imageUri,
+            onImageSelected = { imagePickerLauncher.launch("image/*") }
+        )
+        Spacer(Modifier.height(1.dp))
+        Box(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(50.dp),
+            contentAlignment = Alignment.Center
+        ) {
+            var showColorPicker by remember { mutableStateOf(false) }
+            ExtendedFloatingActionButton(
+                onClick = { showColorPicker = true },
+                icon = {
+                    Box(Modifier.size(24.dp)) {
+                        val myImage: Painter = painterResource(id = R.drawable.color)
+                        Image(painter = myImage, contentDescription = "Edit")
+                    }
+                },
+                text = {
+                    Text(
+                        text = "Background Colour", style = TextStyle(
+                            fontSize = 20.sp, // Change font size here
+                            color = Color.Black
+                        )
+                    )
+                },
+                shape = RoundedCornerShape(0.dp),
+                modifier = Modifier
+                    .fillMaxSize(),
+                containerColor = Color.White,
+            )
+
+            // Show color picker dialog
+            if (showColorPicker) {
+                ColorPickerDialog(
+                    onColorSelected = { color ->
+                        onColorSelected(color)
+                        showColorPicker = false
+                    },
+                    onDismissRequest = { showColorPicker = false }
+                )
+
+            }
+        }
+        Spacer(Modifier.height(1.dp))
+        Location()
+        Spacer(Modifier.height(1.dp))
+        Hastag()
+        Spacer(Modifier.height(1.dp))
+        Activity()
+        Spacer(Modifier.height(1.dp))
+        Texts()
+        Spacer(Modifier.height(1.dp))
+        Link()
+    }
+}
+
 
 @Composable
 fun Link() {
