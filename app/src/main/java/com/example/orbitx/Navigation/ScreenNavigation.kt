@@ -12,11 +12,14 @@ import com.example.orbitx.Views.MainChatScreen
 import com.example.orbitx.Views.MainScreen
 import com.example.orbitx.Views.SignInScreen
 import com.example.orbitx.Views.SignUpScreen
+import com.google.firebase.auth.FirebaseAuth
 
 @Composable
 fun AppNavigation(activity: Activity) {
     val navController = rememberNavController()
-    NavHost(navController = navController, startDestination = "login") {
+    val start = if(FirebaseAuth.getInstance().currentUser != null) "main" else "login"
+
+    NavHost(navController = navController, startDestination = start) {
         composable("login") {
             SignInScreen(
                 onNavigateToHome = { navController.navigate("main") },

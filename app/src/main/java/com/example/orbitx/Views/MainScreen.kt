@@ -139,7 +139,7 @@ fun MainScreen(activity: Activity) {
                 CreatePostScreen(navController,modifier = Modifier.padding(innerPadding))
             }
             composable("profile") {
-                myProfileScreen(userProfile = UserProfile2(
+                myProfileScreen(navController,userProfile = UserProfile2(
                     profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
                     username = "Shreya_12",
                     bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
@@ -165,12 +165,7 @@ fun MainScreen(activity: Activity) {
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 otherUserProfileSection(data=data,userProfile = UserProfile(
                     profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
-                    username = "Alex",
-                    bio = "Software engineer and cat lover",
-                    isFollowing = true,
-                    postCount = 10,
-                    followerCount = 1000,
-                    followingCount = 500
+
                 )
                 )
             }

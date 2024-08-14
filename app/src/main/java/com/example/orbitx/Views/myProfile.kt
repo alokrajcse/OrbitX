@@ -34,8 +34,13 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.example.orbitx.ChatRepository.fetchBio
+import com.example.orbitx.ChatRepository.fetchFollowerCount
+import com.example.orbitx.ChatRepository.fetchFollowingCount
+import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
@@ -45,13 +50,69 @@ import com.google.firebase.firestore.firestore
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun myProfileScreen(userProfile: UserProfile2) {
+fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
+
+
+
+
+
+    var profilePictureUrl by remember { mutableStateOf("") }
+
+
+    var followers by remember { mutableStateOf(0) }
+    var following by remember { mutableStateOf(0) }
+    var myusername by remember {
+        mutableStateOf("")
+    }
+
+    var bio by remember {
+        mutableStateOf("")
+    }
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+    if (userId != null) {
+        LaunchedEffect(userId) {
+            Firebase.database.getReference("users").child(userId).child("username").get()
+                .addOnSuccessListener { snapshot ->
+                    val myuser = snapshot.getValue(String::class.java)?:"Loading..."
+                    if (myuser != null) {
+                        myusername = myuser
+
+
+                    }
+                }
+                .addOnFailureListener {
+
+
+                }
+
+            if (userId != null) {
+                fetchFollowerCount(userId) {count-> followers=count}
+                fetchFollowingCount(userId) { count -> following = count }
+                fetchBio(userId){b->bio=b}
+                fetchProfileurl(userId){url->profilePictureUrl=url}
+            }
+
+        }
+    } else {
+
+    }
+
+
+    var user=UserProfile2(
+        profilePictureUrl=profilePictureUrl,
+    username = myusername,
+    bio=bio,
+    followerCount=followers,
+    followingCount = following
+    )
+
     Scaffold(
         topBar = {
             TopAppBar(
                 title = { Text(text = "Profile") },
                 navigationIcon = {
-                    IconButton(onClick = { /* Handle back navigation */ }) {
+                    IconButton(onClick = { navController.navigateUp() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
@@ -91,11 +152,11 @@ fun myProfileScreen(userProfile: UserProfile2) {
                         modifier = Modifier.fillMaxSize()
                     ) {
                         ProfileHeader(
-                            imageUrl = userProfile.profilePictureUrl,
+                            imageUrl = user.profilePictureUrl,
                             size = 210.dp
                         )
                         Spacer(modifier = Modifier.height(7.dp))
-                        ProfileContent(userProfile = userProfile)
+                        ProfileContent(userProfile = user)
                     }
                 }
             }
@@ -119,6 +180,7 @@ fun myProfileScreen(userProfile: UserProfile2) {
                 )
 
                 Spacer(modifier = Modifier.size(4.dp))
+
                 Text(
                     text = "Add Post",
                     fontSize = 20.sp,
@@ -132,6 +194,8 @@ fun myProfileScreen(userProfile: UserProfile2) {
 
 @Composable
 fun ProfileHeader(imageUrl: String, size: Dp, modifier: Modifier = Modifier) {
+
+
     Card(
         colors = CardDefaults.cardColors(containerColor = Color(0xB9DE3527)),
         elevation = CardDefaults.cardElevation(
@@ -160,29 +224,6 @@ fun ProfileHeader(imageUrl: String, size: Dp, modifier: Modifier = Modifier) {
 @Composable
 fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
 
-    var myusername by remember {
-        mutableStateOf("")
-    }
-    val userId = FirebaseAuth.getInstance().currentUser?.uid
-    if (userId != null) {
-        LaunchedEffect(userId) {
-            Firebase.database.getReference("users").child(userId).child("username").get()
-                .addOnSuccessListener { snapshot ->
-                    val myuser = snapshot.getValue(String::class.java)?:"Loading..."
-                    if (myuser != null) {
-                        myusername = myuser
-
-
-                    }
-                }
-                .addOnFailureListener {
-
-
-                }
-        }
-    } else {
-        // Handle case where user is not logged in
-    }
 
 
     Column(
@@ -192,7 +233,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
             .wrapContentWidth(Alignment.CenterHorizontally)// Ensure content width is correctly constrained
     ) {
         Text(
-            text = myusername,
+            text = userProfile.username,
             fontSize = 30.sp,
             fontWeight = FontWeight.Bold,
             textAlign = TextAlign.Center,
@@ -315,7 +356,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
 @Preview(showBackground = true)
 @Composable
 fun DefaultPreview() {
-    myProfileScreen(
+    myProfileScreen(navController= NavController(LocalContext.current),
         userProfile = UserProfile2(
             profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
             username = "Shreya_12",
@@ -328,14 +369,13 @@ fun DefaultPreview() {
     )
 }
 
-
-
 data class UserProfile2(
-    val profilePictureUrl: String,
-    val username: String,
-    val bio: String,
-    val isFollowing: Boolean,
-    val postCount: Int,
-    val followerCount: Int,
-    val followingCount: Int
+    val profilePictureUrl: String="",
+    val username: String="",
+    val bio: String="",
+    val isFollowing: Boolean=false,
+    val postCount: Int=0,
+    val followerCount: Int=0,
+    val followingCount: Int=0
 )
+
