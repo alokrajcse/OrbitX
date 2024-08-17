@@ -16,21 +16,19 @@ import com.google.firebase.messaging.FirebaseMessaging
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.statusBarColor = android.graphics.Color.BLACK
 
 
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) { // Android 13 and above
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
                     Manifest.permission.POST_NOTIFICATIONS
                 ) != PackageManager.PERMISSION_GRANTED
             ) {
                 requestNotificationPermission()
-            } else {
-                FirebaseMessaging.getInstance().subscribeToTopic("news4")
-            }
-        } else {
-            FirebaseMessaging.getInstance().subscribeToTopic("news4")
-        }
+            } else { }
+        } else { }
 
 
         setContent {

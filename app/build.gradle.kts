@@ -98,6 +98,8 @@ dependencies {
     implementation ("com.google.auth:google-auth-library-oauth2-http:1.1.0")
     implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
 
+    implementation ("androidx.core:core-splashscreen:1.0.0")
+
 
 
 
