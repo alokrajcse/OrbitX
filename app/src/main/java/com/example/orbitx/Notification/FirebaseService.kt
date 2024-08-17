@@ -30,29 +30,19 @@ import java.util.Random
 class FirebaseService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
-        // Always handle data payload
+
         if (remoteMessage.data.isNotEmpty()) {
             val title = remoteMessage.data["title2"]
             val body = remoteMessage.data["body2"]
             val userUid = remoteMessage.data["userUid"]
             val route = remoteMessage.data["route"]
             val receiverUid = remoteMessage.data["receiverUid"]
-
-
-            // Check if the notification should be shown
             if (!isChatWithCurrentUser(receiverUid)) {
                 showNotificationWithUserUid(userUid, route, title, body, receiverUid)
             }
         }
 
 
-//        remoteMessage.notification?.let {
-//            val title = it.title
-//            val body = it.body
-//            if (!isChatWithCurrentUser(remoteMessage.data["userUid"])) {
-//               // showNotification(title, body)
-//            }
-//        }
     }
 
     private fun isChatWithCurrentUser(receiverUid: String?): Boolean {
@@ -65,42 +55,11 @@ class FirebaseService : FirebaseMessagingService() {
         Log.d("FCM", "Refreshed token: $token")
     }
 
-    private fun showNotification(title: String?, message: String?) {
-        val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
-        val notificationId = Random().nextInt()
-        val channelId = "orbitx_channel_id"
-
-        // Create notification channel for Android O and above
-        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            val channel = NotificationChannel(
-                channelId,
-                "Default Channel",
-                NotificationManager.IMPORTANCE_HIGH
-            )
-            channel.description = "OrbitX Notifications"
-            notificationManager.createNotificationChannel(channel)
-        }
-
-        val notificationBuilder = NotificationCompat.Builder(this, channelId)
-            .setContentTitle(title ?: "Default Title")
-            .setContentText(message ?: "Default Message")
-            .setSmallIcon(R.drawable.avataricon)
-            .setAutoCancel(true)
-            .setPriority(NotificationCompat.PRIORITY_HIGH)
-            .setDefaults(NotificationCompat.DEFAULT_ALL)
-            //.setContentIntent(createNotificationPendingIntent(route=route, userUid=userUid))
-
-        notificationManager.notify(notificationId, notificationBuilder.build())
-    }
 
     private fun showNotificationWithUserUid(userUid: String?, route: String?, title: String?, body: String?, receiverUid: String?) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notificationId = Random().nextInt()
         val channelId = "orbitx_channel"
-
-
-
-
 
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             val channel = NotificationChannel(
@@ -115,12 +74,7 @@ class FirebaseService : FirebaseMessagingService() {
             notificationManager.createNotificationChannel(channel)
         }
 
-
-
-
-
-
-                val notificationBuilder = NotificationCompat.Builder(this, channelId)
+        val notificationBuilder = NotificationCompat.Builder(this, channelId)
                     .setContentTitle(title ?: "Notification")
                     .setContentText(body ?: "You have a new message")
                     .setSmallIcon(R.drawable.chat__1)

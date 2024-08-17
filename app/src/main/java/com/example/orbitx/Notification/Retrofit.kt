@@ -46,7 +46,6 @@ fun sendTopicNotification2(context: Context, topic: String, title: String, messa
 
             val json = Gson().toJson(fcmMessage)
 
-            // Manually create MediaType without using toMediaTypeOrNull
             val mediaType = "application/json; charset=utf-8".toMediaTypeOrNull()
             val requestBody = RequestBody.create(mediaType, json)
 
