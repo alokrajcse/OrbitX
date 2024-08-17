@@ -259,7 +259,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier,navC
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
-            .wrapContentWidth(Alignment.CenterHorizontally)// Ensure content width is correctly constrained
+            .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
         Text(
             text = userProfile.username,
@@ -314,9 +314,9 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier,navC
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp) // Horizontal padding to ensure it doesn't touch the edges
-                .padding(vertical = 8.dp), // Vertical padding for spacing above and below the text
-            horizontalArrangement = Arrangement.Start // Align text to start, change to SpaceBetween if needed
+                .padding(horizontal = 16.dp) 
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.Start 
         ) {
             Text(
                 text = userProfile.bio,
