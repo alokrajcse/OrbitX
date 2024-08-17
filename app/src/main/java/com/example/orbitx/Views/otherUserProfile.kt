@@ -32,11 +32,15 @@ import com.example.orbitx.ChatRepository.User
 import com.example.orbitx.ChatRepository.fetchBio
 import com.example.orbitx.ChatRepository.fetchFollowerCount
 import com.example.orbitx.ChatRepository.fetchFollowingCount
+import com.example.orbitx.Notification.topicRepository
 import com.example.orbitx.R
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.database
 import com.google.firebase.database.ktx.database
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun otherUserProfileSection(
@@ -124,6 +128,9 @@ fun otherUserProfileSection(
                             ref.removeValue().addOnSuccessListener {
                                 isFollowing = false
                                 followerCount--
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    topicRepository().unsubscribe("messagefrom"+data+"to"+userUid)
+                                }
                             }
                         }
                     } else {
@@ -131,6 +138,10 @@ fun otherUserProfileSection(
                             ref2.setValue(true).addOnSuccessListener {
                                 isFollowing = true
                                 followerCount++
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    topicRepository().subscribe("messagefrom"+data+"to"+userUid)
+                                }
+
                             }
                         }
                     }

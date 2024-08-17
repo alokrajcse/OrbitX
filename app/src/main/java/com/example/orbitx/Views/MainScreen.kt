@@ -45,7 +45,7 @@ import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
 import com.example.orbitx.model.BottomNavigationItem
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.orbitx.HomeScreen
+
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.Views.ChatHomeScreen
 import com.example.orbitx.Views.CreatePostScreen

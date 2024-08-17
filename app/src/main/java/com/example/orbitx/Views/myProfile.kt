@@ -7,6 +7,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
@@ -101,10 +102,10 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
 
     var user=UserProfile2(
         profilePictureUrl=profilePictureUrl,
-    username = myusername,
-    bio=bio,
-    followerCount=followers,
-    followingCount = following
+        username = myusername,
+        bio=bio,
+        followerCount=followers,
+        followingCount = following
     )
 
     Scaffold(
@@ -125,6 +126,7 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
             )
         }
     ) { paddingValues ->
+
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -327,7 +329,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-            /* Handle post click */ },
+                /* Handle post click */ },
             shape = RoundedCornerShape(17.dp),
             modifier = Modifier
                 .height(40.dp)
@@ -378,4 +380,3 @@ data class UserProfile2(
     val followerCount: Int=0,
     val followingCount: Int=0
 )
-
