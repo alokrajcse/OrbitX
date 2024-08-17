@@ -17,9 +17,6 @@ class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         window.statusBarColor = android.graphics.Color.BLACK
-
-
-
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
             if (ContextCompat.checkSelfPermission(
                     this,
@@ -29,8 +26,6 @@ class MainActivity : ComponentActivity() {
                 requestNotificationPermission()
             } else { }
         } else { }
-
-
         setContent {
             OrbitXTheme {
                 AppNavigation(activity = this, intent = intent)
@@ -43,7 +38,7 @@ class MainActivity : ComponentActivity() {
         val requestPermissionLauncher =
             registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
                 if (isGranted) {
-                    FirebaseMessaging.getInstance().subscribeToTopic("news4")
+
                     showToast("Notifications enabled")
                 } else {
                     showToast("Notifications permission denied")
