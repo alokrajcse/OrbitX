@@ -168,7 +168,7 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                                 ProfileContent(userProfile = user)
                             }
                         }
-                        // Share icon at the top-right corner of the card
+                    
                         IconButton(
                             onClick = { /* Handle share click */ },
                             modifier = Modifier
@@ -197,8 +197,8 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                             .height(50.dp)
                             .align(Alignment.BottomCenter)
                             .border(
-                                width = 2.dp, // Thickness of the border
-                                color = Color.White, // Color of the border
+                                width = 2.dp, 
+                                color = Color.White, 
                                 shape = CircleShape
                             )
                     ) {
@@ -331,8 +331,8 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier,navC
                 navController.navigate("editprofile")
             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xFFFF6F61), // Background color
-                contentColor = Color.White // Icon and text color
+                containerColor = Color(0xFFFF6F61), 
+                contentColor = Color.White 
             ),
             elevation = ButtonDefaults.elevatedButtonElevation(0.dp),
             //shape = RoundedCornerShape(12.dp),
@@ -347,7 +347,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier,navC
                 contentDescription = "Edit Profile",
                 modifier = Modifier
                     .size(25.dp)
-                    .padding(end = 8.dp) // Space between icon and text
+                    .padding(end = 8.dp) 
             )
             Text(
                 text = "Edit Profile",
