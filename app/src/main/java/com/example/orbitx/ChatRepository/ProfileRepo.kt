@@ -3,6 +3,7 @@ package com.example.orbitx.ChatRepository
 import android.util.Log
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.database
 
 
@@ -35,7 +36,7 @@ fun fetchBio(data: String, onBioReceived: (String) -> Unit) {
 }
 
 fun fetchProfileurl(data: String, onBioReceived: (String) -> Unit) {
-    Firebase.database.getReference("users").child(data).child("profilepicurl")
+    Firebase.database.getReference("users").child(data).child("profilepictureurl")
         .get().addOnSuccessListener { snapshot ->
             val bio = snapshot.getValue(String::class.java) ?: "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg"
             onBioReceived(bio)
@@ -59,4 +60,16 @@ fun fetchcurrentuid(onGetUid: (String)-> Unit){
 
     val id=FirebaseAuth.getInstance().currentUser?.uid.toString()
     onGetUid(id)
+}
+
+
+fun setUserOnline(userId: String) {
+    val ref = FirebaseDatabase.getInstance().getReference("users").child(userId)
+    ref.child("online").setValue(true)
+}
+
+
+fun setUserOffline(userId: String) {
+    val ref = FirebaseDatabase.getInstance().getReference("users").child(userId)
+    ref.child("online").setValue(false)
 }

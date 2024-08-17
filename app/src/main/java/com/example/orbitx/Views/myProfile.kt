@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -36,6 +37,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.orbitx.ChatRepository.fetchBio
@@ -52,9 +56,6 @@ import com.google.firebase.firestore.firestore
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
-
-
-
 
 
     var profilePictureUrl by remember { mutableStateOf("") }
@@ -113,7 +114,9 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
             TopAppBar(
                 title = { Text(text = "Profile") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { navController.navigateUp()
+                        navController.popBackStack()
+                    }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
@@ -121,7 +124,7 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = colorResource(id = R.color.orangelight) // Background color for the top bar
+                    containerColor = Color(0xFFFF6F61) // Background color for the top bar
                 )
             )
         }
@@ -158,12 +161,12 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                             size = 210.dp
                         )
                         Spacer(modifier = Modifier.height(7.dp))
-                        ProfileContent(userProfile = user)
+                        ProfileContent(userProfile = user, navController = navController)
                     }
                 }
             }
             Button(
-                onClick = { /* Handle add post click */ },
+                onClick = { navController.navigate("newpost") },
                 colors = ButtonDefaults.buttonColors(
                     containerColor = Color(0xB9DE3527),
                     contentColor = Color.White
@@ -224,7 +227,7 @@ fun ProfileHeader(imageUrl: String, size: Dp, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
+fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier,navController: NavController) {
 
 
 
@@ -300,9 +303,11 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
         }
         Spacer(modifier = Modifier.height(10.dp))
         Button(
-            onClick = { /* Handle edit profile click */ },
+            onClick = {
+                navController.navigate("editprofile")
+             },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xB9DE3527), // Background color
+                containerColor = Color(0xFFFF6F61), // Background color
                 contentColor = Color.White // Icon and text color
             ),
             elevation = ButtonDefaults.elevatedButtonElevation(0.dp),
@@ -336,7 +341,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 .width(250.dp)
                 .align(Alignment.CenterHorizontally),
             colors = ButtonDefaults.buttonColors(
-                containerColor =  Color(0xB9DE3527), // Custom background color
+                containerColor =  Color(0xB9DE3527),
                 contentColor = Color.White)
         ) {
             Icon(
@@ -344,7 +349,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 contentDescription = "Arrow",
                 modifier = Modifier
                     .size(30.dp)
-                    .padding(end = 2.dp) // Adjust size as needed
+                    .padding(end = 2.dp)
             )
             Text(
                 text = " Your Posts ",
@@ -355,21 +360,21 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    myProfileScreen(navController= NavController(LocalContext.current),
-        userProfile = UserProfile2(
-            profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
-            username = "Shreya_12",
-            bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
-            isFollowing = true,
-            postCount = 5,
-            followerCount = 30,
-            followingCount = 12
-        )
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview() {
+//    myProfileScreen()
+//        userProfile = UserProfile2(
+//            profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
+//            username = "Shreya_12",
+//            bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
+//            isFollowing = true,
+//            postCount = 5,
+//            followerCount = 30,
+//            followingCount = 12
+//        )
+//    )
+//}
 
 data class UserProfile2(
     val profilePictureUrl: String="",

@@ -29,17 +29,29 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
+import com.example.orbitx.ChatRepository.fetchBio
+import com.example.orbitx.ChatRepository.fetchProfileurl
+import com.example.orbitx.ChatRepository.fetchusername
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.auth.auth
+import com.google.firebase.database.database
+import com.google.firebase.storage.storage
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun EditProfileScreen() {
+fun EditProfileScreen(navController: NavController) {
     var username by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var phoneNumber by remember { mutableStateOf("") }
     var bio by remember { mutableStateOf("") }
     var profileImageUri by remember { mutableStateOf<Uri?>(null) }
+    var profilepicurl by remember {
+        mutableStateOf("")
+    }
 
     val imagePickerLauncher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.GetContent()
@@ -47,6 +59,11 @@ fun EditProfileScreen() {
         profileImageUri = uri
     }
 
+    var currentuid= Firebase.auth.currentUser?.uid.toString()
+    fetchProfileurl(currentuid){it-> profilepicurl=it}
+    fetchusername(currentuid){it->username=it}
+    fetchBio(currentuid){it->bio=it}
+    email=Firebase.auth.currentUser?.email.toString()
     LazyColumn(
         modifier = Modifier
             .fillMaxSize()
@@ -69,7 +86,7 @@ fun EditProfileScreen() {
                         tint = Color.White,
                         modifier = Modifier
                             .padding(horizontal = 16.dp)
-                            .clickable { /* Handle back click */ }
+                            .clickable { navController.popBackStack() }
                     )
                 },
                 actions = {
@@ -111,7 +128,7 @@ fun EditProfileScreen() {
                         )
                     } else {
                         Image(
-                            imageVector = Icons.Default.AccountCircle,
+                            painter = rememberAsyncImagePainter(profilepicurl),
                             contentDescription = "Profile Picture",
                             contentScale = ContentScale.Crop,
                             modifier = Modifier
@@ -157,7 +174,8 @@ fun EditProfileScreen() {
             Spacer(modifier = Modifier.height(32.dp))
 
             Button(
-                onClick = { /* Handle update click */ },
+                onClick = { updateprofiledetails(username,email,phoneNumber,bio,profileImageUri)
+                          navController.navigateUp()},
                 shape = RoundedCornerShape(8.dp),
                 colors = ButtonDefaults.buttonColors(Color.Black),
                 modifier = Modifier
@@ -176,6 +194,28 @@ fun EditProfileScreen() {
     }
 }
 
+fun updateprofiledetails(username: String, email: String, phoneNumber: String, bio: String, profileImageUri: Uri?) {
+
+    var db = Firebase.database.getReference("users")
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    var db2 = Firebase.storage.getReference("profilepictures")
+    if (userId != null) {
+        db.child(userId).child("bio").setValue(bio)
+        db.child(userId).child("username").setValue(username)
+
+        if (profileImageUri != null) {
+            db2.child(userId).putFile(profileImageUri).addOnSuccessListener {
+                db2.child(userId).downloadUrl.addOnSuccessListener {
+                    db.child(userId).child("profilepictureurl").setValue(it.toString())
+
+                }
+            }
+
+        }
+
+    }
+}
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ProfileTextField(label: String, value: String, onValueChange: (String) -> Unit) {
