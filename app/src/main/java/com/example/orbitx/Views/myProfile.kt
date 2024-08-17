@@ -6,6 +6,7 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
@@ -15,6 +16,7 @@ import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -36,6 +38,9 @@ import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
 import com.example.orbitx.ChatRepository.fetchBio
@@ -52,9 +57,6 @@ import com.google.firebase.firestore.firestore
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
-
-
-
 
 
     var profilePictureUrl by remember { mutableStateOf("") }
@@ -113,7 +115,7 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
             TopAppBar(
                 title = { Text(text = "Profile") },
                 navigationIcon = {
-                    IconButton(onClick = { navController.navigateUp() }) {
+                    IconButton(onClick = { /* Handle back navigation */ }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
@@ -121,12 +123,11 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                     }
                 },
                 colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = colorResource(id = R.color.orangelight) // Background color for the top bar
+                    containerColor = Color(0x85DB4A3E) // Background color for the top bar
                 )
             )
         }
     ) { paddingValues ->
-
         Box(
             modifier = Modifier
                 .fillMaxSize()
@@ -134,60 +135,86 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                 .padding(paddingValues)
                 .padding(top = 25.dp, start = 16.dp, end = 16.dp)
         ) {
-            Column(
+            LazyColumn(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top,
                 modifier = Modifier.fillMaxSize()
             ) {
-                Card(
-                    colors = CardDefaults.cardColors(containerColor = Color.White),
-                    elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
-                    shape = RoundedCornerShape(16.dp),
-                    modifier = Modifier
-                        .height(550.dp)
-                        .width(400.dp)
-                ) {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Top,
-                        modifier = Modifier.fillMaxSize()
+                item {
+                    Box(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(bottom = 16.dp) // Add some spacing
                     ) {
-                        ProfileHeader(
-                            imageUrl = user.profilePictureUrl,
-                            size = 210.dp
-                        )
-                        Spacer(modifier = Modifier.height(7.dp))
-                        ProfileContent(userProfile = user)
+                        Card(
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
+                            shape = RoundedCornerShape(16.dp),
+                            modifier = Modifier
+                                .fillMaxWidth() // Fill the available width
+                                .height(550.dp)
+                        ) {
+                            Column(
+                                horizontalAlignment = Alignment.CenterHorizontally,
+                                verticalArrangement = Arrangement.Top,
+                                modifier = Modifier.fillMaxSize()
+                            ) {
+                                Spacer(modifier = Modifier.height(10.dp))
+                                ProfileHeader(
+                                    imageUrl = user.profilePictureUrl,
+                                    size = 210.dp
+                                )
+                                Spacer(modifier = Modifier.height(7.dp))
+                                ProfileContent(userProfile = user, navController = navController)
+                            }
+                        }
+
+                        IconButton(
+                            onClick = { /* Handle share click */ },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(8.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Filled.Share,
+                                contentDescription = "Share",
+                                tint = Color.Black
+                            )
+                        }
                     }
                 }
-            }
-            Button(
-                onClick = { /* Handle add post click */ },
-                colors = ButtonDefaults.buttonColors(
-                    containerColor = Color(0xB9DE3527),
-                    contentColor = Color.White
-                ),
-                shape = CircleShape,
-                modifier = Modifier
-                    .padding(bottom = 80.dp)
-                    .height(50.dp)
-                    .width(200.dp)
-                    .align(Alignment.BottomCenter)
-            ) {
-                Icon(
-                    imageVector = Icons.Filled.Add,
-                    contentDescription = "Add Post",
-                    modifier = Modifier.size(22.dp)
-                )
-
-                Spacer(modifier = Modifier.size(4.dp))
-
-                Text(
-                    text = "Add Post",
-                    fontSize = 20.sp,
-                    fontWeight = FontWeight.Bold
-                )
+                item {
+                    Button(
+                        onClick = { navController.navigate("newpost") },
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = Color(0xB9DE3527),
+                            contentColor = Color.White
+                        ),
+                        shape = CircleShape,
+                        modifier = Modifier
+                            .padding(vertical = 16.dp)
+                            .fillMaxWidth()
+                            .height(50.dp)
+                            .align(Alignment.BottomCenter)
+                            .border(
+                                width = 2.dp,
+                                color = Color.White,
+                                shape = CircleShape
+                            )
+                    ) {
+                        Icon(
+                            imageVector = Icons.Filled.Add,
+                            contentDescription = "Add Post",
+                            modifier = Modifier.size(22.dp)
+                        )
+                        Spacer(modifier = Modifier.size(4.dp))
+                        Text(
+                            text = "Add Post",
+                            fontSize = 20.sp,
+                            fontWeight = FontWeight.Bold
+                        )
+                    }
+                }
             }
         }
     }
@@ -224,7 +251,7 @@ fun ProfileHeader(imageUrl: String, size: Dp, modifier: Modifier = Modifier) {
 }
 
 @Composable
-fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
+fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier,navController: NavController) {
 
 
 
@@ -232,7 +259,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
         modifier = Modifier
             .padding(8.dp)
             .fillMaxWidth()
-            .wrapContentWidth(Alignment.CenterHorizontally)// Ensure content width is correctly constrained
+            .wrapContentWidth(Alignment.CenterHorizontally)
     ) {
         Text(
             text = userProfile.username,
@@ -287,9 +314,9 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
         Row(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(horizontal = 16.dp) // Horizontal padding to ensure it doesn't touch the edges
-                .padding(vertical = 8.dp), // Vertical padding for spacing above and below the text
-            horizontalArrangement = Arrangement.Start // Align text to start, change to SpaceBetween if needed
+                .padding(horizontal = 16.dp)
+                .padding(vertical = 8.dp),
+            horizontalArrangement = Arrangement.Start
         ) {
             Text(
                 text = userProfile.bio,
@@ -300,10 +327,12 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
         }
         Spacer(modifier = Modifier.height(10.dp))
         Button(
-            onClick = { /* Handle edit profile click */ },
+            onClick = {
+                navController.navigate("editprofile")
+            },
             colors = ButtonDefaults.buttonColors(
-                containerColor = Color(0xB9DE3527), // Background color
-                contentColor = Color.White // Icon and text color
+                containerColor = Color(0xFFFF6F61),
+                contentColor = Color.White
             ),
             elevation = ButtonDefaults.elevatedButtonElevation(0.dp),
             //shape = RoundedCornerShape(12.dp),
@@ -318,7 +347,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 contentDescription = "Edit Profile",
                 modifier = Modifier
                     .size(25.dp)
-                    .padding(end = 8.dp) // Space between icon and text
+                    .padding(end = 8.dp)
             )
             Text(
                 text = "Edit Profile",
@@ -336,7 +365,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 .width(250.dp)
                 .align(Alignment.CenterHorizontally),
             colors = ButtonDefaults.buttonColors(
-                containerColor =  Color(0xB9DE3527), // Custom background color
+                containerColor =  Color(0xB9DE3527),
                 contentColor = Color.White)
         ) {
             Icon(
@@ -344,7 +373,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 contentDescription = "Arrow",
                 modifier = Modifier
                     .size(30.dp)
-                    .padding(end = 2.dp) // Adjust size as needed
+                    .padding(end = 2.dp)
             )
             Text(
                 text = " Your Posts ",
@@ -355,21 +384,21 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun DefaultPreview() {
-    myProfileScreen(navController= NavController(LocalContext.current),
-        userProfile = UserProfile2(
-            profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
-            username = "Shreya_12",
-            bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
-            isFollowing = true,
-            postCount = 5,
-            followerCount = 30,
-            followingCount = 12
-        )
-    )
-}
+//@Preview(showBackground = true)
+//@Composable
+//fun DefaultPreview() {
+//    myProfileScreen()
+//        userProfile = UserProfile2(
+//            profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
+//            username = "Shreya_12",
+//            bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
+//            isFollowing = true,
+//            postCount = 5,
+//            followerCount = 30,
+//            followingCount = 12
+//        )
+//    )
+//}
 
 data class UserProfile2(
     val profilePictureUrl: String="",

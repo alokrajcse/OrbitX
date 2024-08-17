@@ -67,7 +67,14 @@ fun HomeScreen(navController: NavController) {
             Box(
                 modifier = Modifier
                     .fillMaxWidth()
-                    .background( Brush.verticalGradient(listOf(Color(0xFFF85A4F), Color(0xFFE49E99))))
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFFF85A4F),
+                                Color(0xFFE49E99)
+                            )
+                        )
+                    )
             ) {
                 Row(
                     verticalAlignment = Alignment.CenterVertically,
@@ -150,6 +157,11 @@ fun MainScreen(activity: Activity) {
                 )
                 )
             }
+
+            composable("editprofile") {
+               EditProfileScreen(navController)
+            }
+
             composable("logout") {
                 Exit(activity = activity, navController = navController)
             }
