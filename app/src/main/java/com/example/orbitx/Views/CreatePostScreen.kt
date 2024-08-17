@@ -24,8 +24,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material3.SheetValue.Hidden
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
@@ -39,8 +39,16 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.AnnotatedString
+import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.OffsetMapping
+import androidx.compose.ui.text.input.TextFieldValue
+import androidx.compose.ui.text.input.TransformedText
+import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -57,22 +65,33 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.navigation.NavController
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.snapshotFlow
+
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel = viewModel(), modifier: Modifier,) {
     val text by viewModel.text.collectAsState()
+    var locationText by remember { mutableStateOf("") }
+    var HashtagText by remember { mutableStateOf("") }
     val imageUri by viewModel.imageUri.collectAsState()
     val creatingPost by viewModel.isPostCreated.collectAsState()
     val context = LocalContext.current
     val db = Firebase.firestore
-    val postRef = db.collection("Users").document("A43t07amgUmkKxz2zVOK") // replace with the actual post ID
+    val textState = remember { mutableStateOf(TextFieldValue("")) }
+    val postRef =
+        db.collection("Users").document("A43t07amgUmkKxz2zVOK") // replace with the actual post ID
     var authorAvatarUrl by remember { mutableStateOf("") }
-    var post by remember { mutableStateOf(JiteshxUser(
-        authorName = "",
-        authorAvatarUrl = "",
-        timestamp = System.currentTimeMillis() / 1000,
-    )) }
+    var post by remember {
+        mutableStateOf(
+            JiteshxUser(
+                authorName = "",
+                authorAvatarUrl = "",
+                timestamp = System.currentTimeMillis() / 1000,
+            )
+        )
+    }
     var focusedContainerColor by remember { mutableStateOf(Color(237, 222, 221)) }
 
     LaunchedEffect(Unit) {
@@ -99,30 +118,45 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     val coroutineScope = rememberCoroutineScope()
     var openBottomSheet by rememberSaveable { mutableStateOf(true) }
     // Activity result launcher to handle the image picking
-    val imagePickerLauncher = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
-        uri?.let { viewModel.onImageSelected(it) }
-    }
+    val imagePickerLauncher =
+        rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
+            uri?.let { viewModel.onImageSelected(it) }
+        }
+    val _sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded)
     if (openBottomSheet) {
         ModalBottomSheetLayout(
-            sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded),
+            sheetState = _sheetState,
             scrimColor = Color.Transparent,
             sheetContent = {
-                PostOptionsBottomSheet(imagePickerLauncher = imagePickerLauncher,
+                PostOptionsBottomSheet(
+                    textState = textState,
+                    imagePickerLauncher = imagePickerLauncher,
                     imageUri = imageUri,
                     onOptionSelected = { option ->
                         // Handle option selection if needed
                         coroutineScope.launch {
-                            bottomSheetState.hide()
+                            _sheetState.hide()
                         }
                     },
                     onColorSelected = { color ->
                         focusedContainerColor = color
-                    })
+                    },
+                    locationText = locationText,
+                    onLocationTextChanged = { newLocationText ->
+                        locationText = newLocationText
+                        viewModel.onTextChanged("$text $locationText")
+                    }, onHashtagTextChanged = { newHashtagText ->
+                        HashtagText = newHashtagText
+                        viewModel.onTextChanged("$text $locationText")
+                    }
+                )
+
             }
         ) {
             Surface(
                 color = Color.White,
-                modifier = Modifier.padding(top = 0.dp)
+                modifier = Modifier
+                    .padding(top = 0.dp)
                     .fillMaxSize()
             ) {
                 Column() {
@@ -187,7 +221,34 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
 
                             )
                         }
-                        IconButton(onClick =  { coroutineScope.launch { bottomSheetState.show() } }) {
+                        Box(
+                            modifier = Modifier
+                                .height(30.dp)
+                                .width(150.dp),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Row {
+                                IconButton(onClick = { }) {
+                                    Icon(
+                                        imageVector = Icons.Filled.EditLocation,
+                                        contentDescription = "Edit Location",
+                                        tint = Color.Red, // Change color here
+                                        modifier = Modifier.size(25.dp) // Change size here
+                                    )
+                                }
+                                Text(
+                                    locationText,
+                                    modifier = Modifier.weight(0.5f)
+                                        .align(Alignment.CenterVertically),
+                                    style = TextStyle(
+                                        fontSize = 12.sp, // Adjust this value to change the font size
+                                        color = Color.Red
+                                    ),
+                                )
+                            }
+                        }
+
+                        IconButton(onClick = { coroutineScope.launch { _sheetState.show() } }) {
                             Icon(
                                 imageVector = Icons.Filled.MoreVert,
                                 contentDescription = stringResource(R.string.menu),
@@ -198,12 +259,15 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                     Spacer(Modifier.height(8.dp))
 
                     TextField(
-                        value = text, onValueChange = { viewModel.onTextChanged(it) },
+                        value = textState.value,
+                        onValueChange = {
+                            textState.value = it
+                            viewModel.onTextChanged(it.text)
+                        },
                         placeholder = {
                             Text(
-                                text = "What's on your mind?", style = TextStyle(
-                                    fontSize = 25.sp
-                                ), // Change font size here
+                                text = "What's on your mind?",
+                                style = TextStyle(fontSize = 25.sp),
                                 color = Color.Gray
                             )
                         },
@@ -211,12 +275,15 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                             unfocusedContainerColor = Color.White,
                             focusedContainerColor = focusedContainerColor
                         ),
+                        textStyle = TextStyle(
+                            color = Color.Black  // Main text color
+                        ),
                         modifier = Modifier
                             .background(Color.Yellow)
                             .fillMaxWidth()
-                            .height(300.dp)
+                            .height(300.dp),
+                        visualTransformation = HighlightLocationVisualTransformation(HashtagText)
                     )
-
 
                 }
             }
@@ -224,12 +291,39 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     }
 }
 
+
+class HighlightLocationVisualTransformation(private val  HashtagText: String) : VisualTransformation {
+    override fun filter(text: AnnotatedString): TransformedText {
+        val annotatedString = buildAnnotatedString {
+            val originalText = text.text
+            val hashtagIndex = originalText.indexOf(HashtagText)
+
+            if (hashtagIndex != -1) {
+                withStyle(style = SpanStyle(color = Color.Blue)) {
+                    append(originalText.substring(hashtagIndex, hashtagIndex + HashtagText.length))
+                }
+                append(originalText.substring(hashtagIndex+ HashtagText.length))
+            } else {
+                append(originalText)
+            }
+        }
+        return TransformedText(annotatedString, offsetMapping = OffsetMapping.Identity)
+    }
+}
+
+
+
+
 @Composable
 fun PostOptionsBottomSheet(
+    textState: MutableState<TextFieldValue>,
     imageUri: Uri?,
     imagePickerLauncher: ManagedActivityResultLauncher<String, Uri?>,
     onOptionSelected: (String) -> Unit,
-    onColorSelected:  (Color) -> Unit
+    onColorSelected:  (Color) -> Unit,
+    locationText: String,
+    onLocationTextChanged: (String) -> Unit,
+    onHashtagTextChanged: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
         Spacer(Modifier.height(1.dp))
@@ -280,9 +374,13 @@ fun PostOptionsBottomSheet(
             }
         }
         Spacer(Modifier.height(1.dp))
-        Location()
+        Location{ location ->
+            onLocationTextChanged(location)}
         Spacer(Modifier.height(1.dp))
-        Hastag()
+        Spacer(Modifier.height(1.dp))
+        Hashtag(textState = textState) { hashtag ->
+            onHashtagTextChanged(hashtag)
+        }
         Spacer(Modifier.height(1.dp))
         Activity()
         Spacer(Modifier.height(1.dp))
@@ -383,8 +481,10 @@ fun Activity() {
     }
 }
 
-@Composable
-fun Hastag() {
+@Composable fun Hashtag(textState: MutableState<TextFieldValue>, onHashtagEntered: (String) -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    var hashtagText by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -392,15 +492,18 @@ fun Hastag() {
         contentAlignment = Alignment.Center
     ) {
         ExtendedFloatingActionButton(
-            onClick = { },
-            icon = {Box(Modifier.size(24.dp)){
-                val myImage: Painter = painterResource(id = R.drawable.hashtag)
-                Image(painter = myImage, contentDescription = "Edit")
-            }},
+            onClick = { showDialog = true },
+            icon = {
+                Box(Modifier.size(24.dp)) {
+                    val myImage: Painter = painterResource(id = R.drawable.hashtag)
+                    Image(painter = myImage, contentDescription = "Edit")
+                }
+            },
             text = {
                 Text(
-                    text = "Hashtag", style = TextStyle(
-                        fontSize = 20.sp,// Change font size here
+                    text = "Hashtag",
+                    style = TextStyle(
+                        fontSize = 20.sp,
                         color = Color.Black
                     )
                 )
@@ -408,13 +511,39 @@ fun Hastag() {
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier
                 .fillMaxSize(),
-            containerColor = Color.White,
+            containerColor = Color.White
+        )
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Enter Hashtag") },
+            text = {
+                TextField(
+                    value = hashtagText,
+                    onValueChange = { hashtagText = it },
+                    label = { Text("Hashtag") }
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    onHashtagEntered(hashtagText)
+                    textState.value = TextFieldValue(textState.value.text + " " + hashtagText)
+                    showDialog = false
+                }) {
+                    Text("Confirm")
+                }
+            }
         )
     }
 }
 
 @Composable
-fun Location() {
+fun Location(onLocationEntered: (String) -> Unit) {
+    var showDialog by remember { mutableStateOf(false) }
+    var locationText by remember { mutableStateOf("") }
+
     Box(
         modifier = Modifier
             .fillMaxWidth()
@@ -422,17 +551,18 @@ fun Location() {
         contentAlignment = Alignment.Center
     ) {
         ExtendedFloatingActionButton(
-            onClick = { },
+            onClick = { showDialog = true },
             icon = {
-                Box(Modifier.size(24.dp)) { // adjust the size here
+                Box(Modifier.size(24.dp)) {
                     val myImage: Painter = painterResource(id = R.drawable.location)
                     Image(painter = myImage, contentDescription = "Edit")
                 }
             },
             text = {
                 Text(
-                    text = "Check In", style = TextStyle(
-                        fontSize = 20.sp,// Change font size here
+                    text = "Check In",
+                    style = TextStyle(
+                        fontSize = 20.sp,
                         color = Color.Black
                     )
                 )
@@ -440,11 +570,32 @@ fun Location() {
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier
                 .fillMaxSize(),
-            containerColor = Color.White,
+            containerColor = Color.White
+        )
+    }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text("Enter Location") },
+            text = {
+                TextField(
+                    value = locationText,
+                    onValueChange = { locationText = it },
+                    label = { Text("Location") }
+                )
+            },
+            confirmButton = {
+                Button(onClick = {
+                    onLocationEntered(locationText)
+                    showDialog = false
+                }) {
+                    Text("Confirm")
+                }
+            }
         )
     }
 }
-
 @Composable
 fun ColorPickerDialog(onColorSelected: (Color) -> Unit, onDismissRequest: () -> Unit) {
     AlertDialog(
