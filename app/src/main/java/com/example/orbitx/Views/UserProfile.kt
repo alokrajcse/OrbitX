@@ -1,5 +1,6 @@
 package com.example.orbitx.Views
 
+import android.content.res.Configuration
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -7,20 +8,27 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
+import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.ArrowDropDown
 import androidx.compose.material.icons.filled.Edit
+import androidx.compose.material.icons.filled.Share
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
@@ -28,13 +36,54 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.navigation.NavController
 import coil.compose.rememberAsyncImagePainter
 import coil.request.ImageRequest
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.database
 
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun ProfileScreen(userProfile: UserProfile2) {
+fun myProfileScreen(navController: NavController, userProfile: UserProfile2) {
+
+    var profilePictureUrl by remember { mutableStateOf("") }
+    var followers by remember { mutableStateOf(0) }
+    var following by remember { mutableStateOf(0) }
+    var myusername by remember { mutableStateOf("") }
+    var bio by remember { mutableStateOf("") }
+
+    val userId = FirebaseAuth.getInstance().currentUser?.uid
+
+    LaunchedEffect(userId) {
+        if (userId != null) {
+            Firebase.database.getReference("users").child(userId).child("username").get()
+                .addOnSuccessListener { snapshot ->
+                    myusername = snapshot.getValue(String::class.java) ?: "Loading..."
+                }
+                .addOnFailureListener {
+                    // Handle error
+                }
+
+            fetchFollowerCount(userId) { count -> followers = count }
+            fetchFollowingCount(userId) { count -> following = count }
+            fetchBio(userId) { b -> bio = b }
+            fetchProfileurl(userId) { url -> profilePictureUrl = url }
+        }
+    }
+
+    val user = UserProfile2(
+        profilePictureUrl = profilePictureUrl,
+        username = myusername,
+        bio = bio,
+        followerCount = followers,
+        followingCount = following
+    )
+
+    val configuration = LocalConfiguration.current
+    val isLandscape = configuration.orientation == Configuration.ORIENTATION_LANDSCAPE
+
     Scaffold(
         topBar = {
             TopAppBar(
@@ -63,20 +112,26 @@ fun ProfileScreen(userProfile: UserProfile2) {
             Column(
                 horizontalAlignment = Alignment.CenterHorizontally,
                 verticalArrangement = Arrangement.Top,
-                modifier = Modifier.fillMaxSize()
+                modifier = Modifier
+                    .fillMaxSize()
+                    .padding(bottom = if (isLandscape) 100.dp else 0.dp) // Space for the bottom button in landscape
             ) {
                 Card(
                     colors = CardDefaults.cardColors(containerColor = Color.White),
                     elevation = CardDefaults.cardElevation(defaultElevation = 6.dp),
                     shape = RoundedCornerShape(16.dp),
                     modifier = Modifier
-                        .height(550.dp)
-                        .width(400.dp)
+                        .height(if (isLandscape) 350.dp else 570.dp) // Adjust height based on orientation
+                        .fillMaxWidth(if (isLandscape) 0.95f else 1f)
+                        .let {
+                            if (isLandscape) {
+                                it.verticalScroll(rememberScrollState())
+                            } else {
+                                it
+                            }
+                        }
                 ) {
-                    Spacer(modifier = Modifier.height(20.dp))
-                    Column(
-                        horizontalAlignment = Alignment.CenterHorizontally,
-                        verticalArrangement = Arrangement.Top,
+                    Box(
                         modifier = Modifier.fillMaxSize()
                     ) {
                         ProfileHeader(
@@ -85,9 +140,34 @@ fun ProfileScreen(userProfile: UserProfile2) {
                         )
                         Spacer(modifier = Modifier.height(7.dp))
                         ProfileContent(userProfile = userProfile)
+
+                        if (isLandscape) {
+                            Icon(
+                                imageVector = Icons.Default.ArrowDropDown, // Scroll icon for landscape
+                                contentDescription = "Scroll Down",
+                                modifier = Modifier
+                                    .align(Alignment.TopCenter)
+                                    .padding(top = 8.dp)
+                            )
+                        }
+
+                        // Share icon
+                        IconButton(
+                            onClick = { /* Handle share click */ },
+                            modifier = Modifier
+                                .align(Alignment.TopEnd)
+                                .padding(16.dp)
+                        ) {
+                            Icon(
+                                imageVector = Icons.Default.Share,
+                                contentDescription = "Share"
+                            )
+                        }
                     }
                 }
             }
+
+            // Bottom button
             Button(
                 onClick = { /* Handle add post click */ },
                 colors = ButtonDefaults.buttonColors(
@@ -96,7 +176,7 @@ fun ProfileScreen(userProfile: UserProfile2) {
                 ),
                 shape = CircleShape,
                 modifier = Modifier
-                    .padding(bottom = 80.dp)
+                    .padding(bottom = if (isLandscape) 20.dp else 80.dp) // Adjusted padding for landscape mode
                     .height(50.dp)
                     .width(200.dp)
                     .align(Alignment.BottomCenter)
@@ -117,7 +197,6 @@ fun ProfileScreen(userProfile: UserProfile2) {
         }
     }
 }
-
 
 @Composable
 fun ProfileHeader(imageUrl: String, size: Dp, modifier: Modifier = Modifier) {
@@ -203,7 +282,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 )
             }
         }
-        Spacer(modifier = Modifier.height(16.dp))
+        Spacer(modifier = Modifier.height(5.dp))
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -218,7 +297,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 modifier = Modifier.padding(end = 16.dp)
             )
         }
-        Spacer(modifier = Modifier.height(10.dp))
+        Spacer(modifier = Modifier.height(4.dp))
         Button(
             onClick = { /* Handle edit profile click */ },
             colors = ButtonDefaults.buttonColors(
@@ -246,7 +325,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
                 fontWeight = FontWeight.Bold
             )
         }
-        Spacer(modifier = Modifier.height(8.dp))
+        Spacer(modifier = Modifier.height(1.dp))
         Button(
             onClick = { /* Handle post click */ },
             shape = RoundedCornerShape(17.dp),
@@ -261,7 +340,8 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
             Icon(
                 imageVector = Icons.Filled.ArrowDropDown,
                 contentDescription = "Arrow",
-                modifier = Modifier.size(30.dp)
+                modifier = Modifier
+                    .size(30.dp)
                     .padding(end = 2.dp) // Adjust size as needed
             )
             Text(
