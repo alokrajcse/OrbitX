@@ -8,6 +8,7 @@ import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
 import androidx.navigation.navArgument
+import com.example.orbitx.Views.EditProfileScreen
 import com.example.orbitx.Views.MainChatScreen
 import com.example.orbitx.Views.MainScreen
 import com.example.orbitx.Views.SignInScreen
@@ -33,6 +34,12 @@ fun AppNavigation(activity: Activity, intent: Intent?) {
                 onNavigateBackToLogin = { navController.popBackStack() }
             )
         }
+
+        composable("editprofile") {
+
+            EditProfileScreen(navController)
+        }
+
         composable("main") {
             MainScreen(activity = activity)
         }
