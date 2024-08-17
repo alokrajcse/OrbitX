@@ -2,7 +2,9 @@ package com.example.orbitx
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -32,6 +34,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
@@ -46,6 +49,7 @@ import com.example.orbitx.ChatRepository.fetchcurrentuid
 import com.example.orbitx.Navigation.AppNavigation
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.Navigation.shouldShowBottomBar
+import com.example.orbitx.Notification.sendTopicNotification2
 import com.example.orbitx.Views.ChatHomeScreen
 import com.example.orbitx.Views.CreatePostScreen
 import com.example.orbitx.Views.Exit
@@ -59,22 +63,39 @@ import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.Views.UserProfile2
 import com.example.orbitx.Views.myProfileScreen
 import com.example.orbitx.Views.otherUserProfileSection
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.messaging.FirebaseMessaging
 
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
 
+        FirebaseMessaging.getInstance().subscribeToTopic("news4")
+
+
         super.onCreate(savedInstanceState)
+
+
+
+
+
+
         setContent {
             OrbitXTheme {
-                AppNavigation(activity = this)
+
+
+
+
+                AppNavigation(activity = this, intent = intent)
+                //IndeterminateCircularIndicator()
+
+
             }
         }
     }
+
+
 }
-
-
-
 
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
@@ -133,5 +154,71 @@ fun HomeScreen(navController: NavController) {
             InstagramFeed()
         }
 
+    }
+}
+
+@Composable
+fun IndeterminateCircularIndicator() {
+    var loading by remember { mutableStateOf(false) }
+
+
+    Button(onClick = { loading = true }, enabled = !loading) {
+        Text("Start loading")
+    }
+
+//    Text(text = "heyy")
+    if (!loading) return
+
+    Bar()
+
+
+
+
+}
+
+@Composable
+fun Bar(modifier: Modifier = Modifier) {
+    Column(
+        Modifier
+
+            .background(Color.Black)) {
+
+        Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+
+            Text(text = "Sending Image", textAlign = TextAlign.Center, modifier = Modifier.padding(5.dp), fontWeight = FontWeight.Bold, color = Color.White)
+        }
+
+        Row {
+
+            LinearProgressIndicator(
+                modifier = Modifier
+                    .padding(12.dp)
+                    .fillMaxWidth(),
+                color = Color.Green,
+                trackColor = Color.LightGray,
+            )
+        }
+
+
+    }
+
+}
+
+
+
+// Example navigation function
+private fun navigateToScreen(route: String, userUid: String) {
+    // Handle navigation logic based on route and userUid
+    when (route) {
+        "chats" -> {
+            // Logic to navigate to chat screen with userUid
+            // You can use your NavController or any navigation method you have
+        }
+        "profile" -> {
+            // Logic to navigate to profile screen with userUid
+        }
+        else -> {
+            // Default action if no specific route is provided
+        }
     }
 }

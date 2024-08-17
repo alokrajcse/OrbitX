@@ -101,10 +101,10 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
 
     var user=UserProfile2(
         profilePictureUrl=profilePictureUrl,
-    username = myusername,
-    bio=bio,
-    followerCount=followers,
-    followingCount = following
+        username = myusername,
+        bio=bio,
+        followerCount=followers,
+        followingCount = following
     )
 
     Scaffold(
@@ -327,7 +327,7 @@ fun ProfileContent(userProfile: UserProfile2, modifier: Modifier = Modifier) {
         Spacer(modifier = Modifier.height(8.dp))
         Button(
             onClick = {
-            /* Handle post click */ },
+                /* Handle post click */ },
             shape = RoundedCornerShape(17.dp),
             modifier = Modifier
                 .height(40.dp)
@@ -378,4 +378,3 @@ data class UserProfile2(
     val followerCount: Int=0,
     val followingCount: Int=0
 )
-
