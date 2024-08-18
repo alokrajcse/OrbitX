@@ -143,29 +143,34 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
             sheetState = _sheetState,
             scrimColor = Color.Transparent,
             sheetContent = {
-                PostOptionsBottomSheet(
-                    textState = textState,
-                    imagePickerLauncher = imagePickerLauncher,
-                    imageUri = imageUri,
-                    onOptionSelected = { option ->
-                        // Handle option selection if needed
-                        coroutineScope.launch {
-                            _sheetState.hide()
+                Box(
+                    modifier = Modifier
+                        .offset(y = (-10).dp) // Adjust the offset value to move the sheet up
+                ) {
+                    PostOptionsBottomSheet(
+                        textState = textState,
+                        imagePickerLauncher = imagePickerLauncher,
+                        imageUri = imageUri,
+                        onOptionSelected = { option ->
+                            // Handle option selection if needed
+                            coroutineScope.launch {
+                                _sheetState.hide()
+                            }
+                        },
+                        onColorSelected = { color ->
+                            focusedContainerColor = color
+                        },
+                        locationText = locationText,
+                        onLocationTextChanged = { newLocationText ->
+                            locationText = newLocationText
+                            viewModel.onTextChanged("$text $locationText")
+                        },
+                        onHashtagTextChanged = { newHashtagText ->
+                            HashtagText = newHashtagText
+                            viewModel.onTextChanged("$text $locationText")
                         }
-                    },
-                    onColorSelected = { color ->
-                        focusedContainerColor = color
-                    },
-                    locationText = locationText,
-                    onLocationTextChanged = { newLocationText ->
-                        locationText = newLocationText
-                        viewModel.onTextChanged("$text $locationText")
-                    }, onHashtagTextChanged = { newHashtagText ->
-                        HashtagText = newHashtagText
-                        viewModel.onTextChanged("$text $locationText")
-                    }
-                )
-
+                    )
+                }
             }
         ) {
             Surface(
@@ -196,7 +201,10 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                             LinearProgressIndicator(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
+                                    .padding(horizontal = 16.dp),
+                                trackColor = Color.LightGray,
+                                color = colorResource(id = R.color.orange)
+
                             )
                         }
                     }
