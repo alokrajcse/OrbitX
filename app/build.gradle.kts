@@ -103,7 +103,7 @@ dependencies {
     implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
 
     implementation ("androidx.core:core-splashscreen:1.0.0")
-
+    implementation ("com.google.accompanist:accompanist-swiperefresh:0.30.1")
 
 
 

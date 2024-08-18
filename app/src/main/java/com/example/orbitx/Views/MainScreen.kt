@@ -2,7 +2,6 @@ package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -13,12 +12,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.AddCircle
-import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,7 +22,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -40,20 +33,13 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import coil.compose.rememberImagePainter
-
 import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
-import com.example.orbitx.model.BottomNavigationItem
 import androidx.lifecycle.viewmodel.compose.viewModel
-
 import com.example.orbitx.Navigation.BottomNavigationBar
-import com.example.orbitx.Views.ChatHomeScreen
-import com.example.orbitx.Views.CreatePostScreen
-import com.example.orbitx.Views.Exit
-import com.example.orbitx.Views.MainChatScreen
-import com.example.orbitx.Views.SearchScreen
-//import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.model.Posts
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -303,34 +289,43 @@ fun InstagramPost(
 @Composable
 fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
     var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchPostsFromFirestore { posts ->
-            Log.d("InstagramFeed", "Fetched posts: $posts")
             postsList = posts
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFAFAFA))
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = {
+            isRefreshing = true
+            viewModel.fetchPostsFromFirestore { posts ->
+                postsList = posts
+                isRefreshing = false
+            }
+        }
     ) {
-        items(postsList) { post ->
-            InstagramPost(
-                profileImageResId = R.drawable.avataricon,
-                username = "username",
-                location = "Indonesia",
-                imageUrl = post.imageUrl,
-                text = post.text,
-                initialIsLiked = false,
-                onComment = { /* Handle comment action */ },
-                onShare = { /* Handle share action */ },
-                onLikeChange = { isLiked ->
-
-                }
-            )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            items(postsList) { post ->
+                InstagramPost(
+                    profileImageResId = R.drawable.avataricon,
+                    username = "username",
+                    location = "Indonesia",
+                    imageUrl = post.imageUrl,
+                    text = post.text,
+                    initialIsLiked = false,
+                    onComment = { /* Handle comment action */ },
+                    onShare = { /* Handle share action */ },
+                    onLikeChange = { isLiked ->
+                    }
+                )
+            }
         }
     }
 }
-
