@@ -8,6 +8,7 @@ import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material3.*
 import androidx.compose.ui.Alignment
@@ -80,7 +81,7 @@ fun otherUserProfileSection(
 
     }
 
-    Column(
+    LazyColumn(
         modifier = modifier
             .fillMaxWidth()
             .padding(horizontal = 16.dp, vertical = 24.dp)
