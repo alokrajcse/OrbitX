@@ -209,7 +209,7 @@ fun otherUserProfileSection(
                         Spacer(modifier = Modifier.width(8.dp))
 
                         Button(
-                            onClick = { /* Handle message button click */ },
+                            onClick = { navController.navigate("MainChatScreen/$data") },
                             modifier = Modifier.weight(1f),
                             colors = ButtonDefaults.buttonColors(
                                 containerColor = colorResource(id = R.color.orange))
