@@ -1,7 +1,6 @@
 package com.example.orbitx.Views
 
 import android.app.Activity
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -34,6 +33,8 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.orbitx.HomeScreen
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.model.Posts
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 
 @Composable
 fun MainScreen(activity: Activity) {
@@ -107,37 +108,46 @@ fun MainScreen(activity: Activity) {
         }
     }
 }
-
 @Composable
 fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
     var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
     LaunchedEffect(Unit) {
         viewModel.fetchPostsFromFirestore { posts ->
-            Log.d("InstagramFeed", "Fetched posts: $posts")
             postsList = posts
         }
     }
 
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFAFAFA))
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = {
+            isRefreshing = true
+            viewModel.fetchPostsFromFirestore { posts ->
+                postsList = posts
+                isRefreshing = false
+            }
+        }
     ) {
-        items(postsList) { post ->
-            InstagramPost(
-                profileImageResId = R.drawable.avataricon,
-                username = "username",
-                location = "Indonesia",
-                imageUrl = post.imageUrl,
-                text = post.text,
-                initialIsLiked = false,
-                onComment = { /* Handle comment action */ },
-                onShare = { /* Handle share action */ },
-                onLikeChange = { isLiked ->
-
-                }
-            )
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            items(postsList) { post ->
+                InstagramPost(
+                    profileImageResId = R.drawable.avataricon,
+                    username = "username",
+                    location = "Indonesia",
+                    imageUrl = post.imageUrl,
+                    text = post.text,
+                    initialIsLiked = false,
+                    onComment = { /* Handle comment action */ },
+                    onShare = { /* Handle share action */ },
+                    onLikeChange = { isLiked ->
+                    }
+                )
+            }
         }
     }
 }
@@ -168,7 +178,7 @@ fun InstagramPost(
                 painter = painterResource(profileImageResId),
                 contentDescription = "Profile image",
                 modifier = Modifier
-                    .size(40.dp) // Adjusted size of profile image for better alignment
+                    .size(40.dp)
                     .clip(CircleShape)
             )
 
@@ -189,7 +199,6 @@ fun InstagramPost(
             }
         }
         Spacer(modifier = Modifier.height(8.dp))
-
         Card(
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(8.dp),
@@ -203,7 +212,7 @@ fun InstagramPost(
                 contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .fillMaxWidth()
-                    .height(250.dp) // Adjusted height of post image to match design
+                    .height(250.dp)
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
@@ -216,35 +225,37 @@ fun InstagramPost(
                     imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = "Like",
                     tint = if (isLiked) Color.Red else Color.Black,
-                    modifier = Modifier.size(26.dp) // Ensuring the size aligns with the design
+                    modifier = Modifier.size(26.dp)
                 )
             }
             IconButton(onClick = onComment) {
                 Icon(
                     painter = painterResource(R.drawable.speech_bubble),
                     contentDescription = "Comment",
-                    modifier = Modifier.size(24.dp) // Adjusted size for better alignment
+                    modifier = Modifier.size(24.dp)
                 )
             }
             IconButton(onClick = onShare) {
                 Icon(
                     imageVector = Icons.Filled.Share,
                     contentDescription = "Share",
-                    modifier = Modifier.size(22.dp) // Adjusted size for better alignment
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
         Text(
-            text = "${if (isLiked) 311 else 310} Likes", // Dynamic like count based on state
+            text = "${if (isLiked) 311 else 310} Likes",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
-            modifier = Modifier.padding(start = 12.dp)
+            modifier = Modifier.padding(start = 12.dp),
+
         )
         Text(
             text = text,
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 12.dp),
-            lineHeight = 20.sp
+            lineHeight = 20.sp,
+
         )
 
     }

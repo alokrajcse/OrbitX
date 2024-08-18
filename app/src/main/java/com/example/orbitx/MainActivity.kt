@@ -39,7 +39,6 @@ class MainActivity : ComponentActivity() {
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {

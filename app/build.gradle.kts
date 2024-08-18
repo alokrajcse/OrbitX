@@ -90,5 +90,6 @@ dependencies {
     implementation ("androidx.compose.ui:ui:1.6.8")
     implementation ("androidx.compose.material:material:1.6.8")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.6.8")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
 
 }
