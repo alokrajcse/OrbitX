@@ -86,95 +86,117 @@ fun otherUserProfileSection(
             .padding(horizontal = 16.dp, vertical = 24.dp)
     ) {
         // Profile picture and Username/Bio
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.spacedBy(16.dp)
-        ) {
-            UserProfilePicture(
-                imageUrl = userProfile.profilePictureUrl,
-                size = 100.dp
-            )
-
-            Column(
-                modifier = Modifier
-                    .weight(1f)
-                    .alignByBaseline()
+        item {
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.spacedBy(16.dp)
             ) {
-                Text(
-                    text = username ?: "Loading...",
-                    style = MaterialTheme.typography.headlineMedium
+                UserProfilePicture(
+                    imageUrl = userProfile.profilePictureUrl,
+                    size = 100.dp
                 )
-                Text(
-                    text = bio,
-                    style = MaterialTheme.typography.bodyLarge,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(top = 4.dp)
+
+                Column(
+                    modifier = Modifier
+                        .weight(1f)
+                        .alignByBaseline()
+                ) {
+                    Text(
+                        text = username ?: "Loading...",
+                        style = MaterialTheme.typography.headlineMedium
+                    )
+                    Text(
+                        text = bio,
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                        modifier = Modifier.padding(top = 4.dp)
+                    )
+                }
+            }
+        }
+
+        // Follower count
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 16.dp),
+                horizontalArrangement = Arrangement.SpaceEvenly
+            ) {
+                ProfileStat(
+                    label = "Posts",
+                    value = userProfile.postCount.toString()
+                )
+                ProfileStat(
+                    label = "Followers",
+                    value = followerCount.toString()
+                )
+                ProfileStat(
+                    label = "Following",
+                    value = followingCount.toString()
                 )
             }
         }
 
-        FollowButton(
-            isFollowing = isFollowing,
-            onClick = {
-                val userUid = FirebaseAuth.getInstance().currentUser!!.uid
-                val ref = Firebase.database.getReference("users").child(userUid).child("following").child(data)
-                val ref2 = Firebase.database.getReference("users").child(data).child("followers").child(userUid)
+        item {
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(top = 8.dp),
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                FollowButton(
+                    isFollowing = isFollowing,
+                    onClick = {
+                        val userUid = FirebaseAuth.getInstance().currentUser!!.uid
+                        val ref = Firebase.database.getReference("users").child(userUid).child("following").child(data)
+                        val ref2 = Firebase.database.getReference("users").child(data).child("followers").child(userUid)
 
-                ref.get().addOnSuccessListener { snapshot ->
-                    val current = snapshot.getValue(Boolean::class.java) ?: false
+                        ref.get().addOnSuccessListener { snapshot ->
+                            val current = snapshot.getValue(Boolean::class.java) ?: false
 
-                    if (current) {
-                        ref2.removeValue().addOnSuccessListener {
-                            ref.removeValue().addOnSuccessListener {
-                                isFollowing = false
-                                followerCount--
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    topicRepository().unsubscribe("messagefrom"+data+"to"+userUid)
+                            if (current) {
+                                ref2.removeValue().addOnSuccessListener {
+                                    ref.removeValue().addOnSuccessListener {
+                                        isFollowing = false
+                                        followerCount--
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            topicRepository().unsubscribe("messagefrom"+data+"to"+userUid)
+                                        }
+                                    }
+                                }
+                            } else {
+                                ref.setValue(true).addOnSuccessListener {
+                                    ref2.setValue(true).addOnSuccessListener {
+                                        isFollowing = true
+                                        followerCount++
+                                        CoroutineScope(Dispatchers.IO).launch {
+                                            topicRepository().subscribe("messagefrom"+data+"to"+userUid)
+                                        }
+                                    }
                                 }
                             }
+                        }.addOnFailureListener {
+                            // Handle any error cases if needed
                         }
-                    } else {
-                        ref.setValue(true).addOnSuccessListener {
-                            ref2.setValue(true).addOnSuccessListener {
-                                isFollowing = true
-                                followerCount++
-                                CoroutineScope(Dispatchers.IO).launch {
-                                    topicRepository().subscribe("messagefrom"+data+"to"+userUid)
-                                }
+                    },
+                    modifier = Modifier.weight(1f)
+                )
 
-                            }
-                        }
-                    }
-                }.addOnFailureListener {
-                    // Handle any error cases if needed
+                Spacer(modifier = Modifier.width(8.dp))
+
+                Button(
+                    onClick = { /* Handle message button click */ },
+                    modifier = Modifier.weight(1f),
+                    colors = ButtonDefaults.buttonColors(
+                        containerColor = colorResource(id = R.color.orange))
+                ) {
+                    Text(text = "Message", color = MaterialTheme.colorScheme.onPrimary)
                 }
-            },
-            modifier = Modifier.padding(top = 16.dp)
-        )
-
-
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(top = 16.dp),
-            horizontalArrangement = Arrangement.SpaceEvenly
-        ) {
-            ProfileStat(
-                label = "Posts",
-                value = userProfile.postCount.toString()
-            )
-            ProfileStat(
-                label = "Followers",
-                value = followerCount.toString()
-            )
-            ProfileStat(
-                label = "Following",
-                value = followingCount.toString()
-            )
+            }
         }
     }
 }
-
 @Composable
 private fun UserProfilePicture(
     imageUrl: String,
