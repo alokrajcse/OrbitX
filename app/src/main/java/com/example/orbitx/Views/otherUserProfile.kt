@@ -37,6 +37,7 @@ import com.example.orbitx.ChatRepository.User
 import com.example.orbitx.ChatRepository.fetchBio
 import com.example.orbitx.ChatRepository.fetchFollowerCount
 import com.example.orbitx.ChatRepository.fetchFollowingCount
+import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.Notification.topicRepository
 import com.example.orbitx.R
 import com.google.firebase.Firebase
@@ -78,6 +79,8 @@ fun otherUserProfileSection(
         var followingCount by remember { mutableStateOf(userProfile.followingCount) }
 
         var bio by remember { mutableStateOf(userProfile.bio) }
+        var profilePictureUrl by remember { mutableStateOf("") }
+
 
 
 
@@ -90,6 +93,7 @@ fun otherUserProfileSection(
             fetchFollowingCount(data) { count -> followingCount = count }
 
             fetchBio(data){b->bio=b}
+            fetchProfileurl(data){it->profilePictureUrl=it}
 
             val currentUserUid = FirebaseAuth.getInstance().currentUser!!.uid
             Firebase.database.getReference("users").child(currentUserUid).child("following").child(data)
@@ -115,7 +119,7 @@ fun otherUserProfileSection(
                         horizontalArrangement = Arrangement.spacedBy(16.dp)
                     ) {
                         UserProfilePicture(
-                            imageUrl = userProfile.profilePictureUrl,
+                            imageUrl = profilePictureUrl,
                             size = 100.dp
                         )
 
