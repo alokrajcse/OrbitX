@@ -1,4 +1,4 @@
-package com.example.chatbyme2.repository
+package com.example.orbitx.ChatRepository
 
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -22,7 +22,6 @@ object ChatRepository {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
                 liveData.value = "Error"
             }
         })

@@ -1,5 +1,6 @@
 package com.example.orbitx.Views
 
+import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -16,9 +17,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
@@ -43,28 +46,41 @@ fun SearchScreen(navController: NavController,modifier: Modifier = Modifier) {
             modifier = modifier
                 .fillMaxSize()
 
-        ) {
+        )
+
+        {
 
             Box(modifier = Modifier
                 .fillMaxWidth()
-                .background(colorResource(id = R.color.orange)).padding(16.dp)){
+                .background(colorResource(id = R.color.orange))
+                .padding(16.dp)){
 
-                OutlinedTextField(
-                    leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "") },
-                    value = searchText,
-                    onValueChange = viewModel::onSearchTextChange,
-                    modifier = Modifier
-                        .fillMaxWidth(),
-                    placeholder = { Text(text = "Search") },
-                    colors = TextFieldDefaults.textFieldColors(
-                        containerColor = colorResource(id = R.color.white)
-                    ),
-                )
+                Card(colors = CardDefaults.cardColors(Color.White)) {
+                    TextField(
+                        leadingIcon = { Icon(imageVector = Icons.Default.Search, contentDescription = "") },
+                        value = searchText,
+                        onValueChange = viewModel::onSearchTextChange,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(5.dp),
+                        placeholder = { Text(text = "Search") },
+                        colors = OutlinedTextFieldDefaults.colors(Color.Black),
+                        shape = TextFieldDefaults.shape,
+
+
+
+
+                        )
+
+
+                }
             }
 
             Spacer(modifier = Modifier.height(16.dp))
             LazyColumn(
-                modifier = Modifier.fillMaxWidth().padding(16.dp)
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .padding(16.dp)
             ) {
                 items(persons) { person ->
 
@@ -74,7 +90,8 @@ fun SearchScreen(navController: NavController,modifier: Modifier = Modifier) {
                             .padding(vertical = 8.dp)
                             .clickable {
 
-                               navController.navigate("profile/${person.parent}")
+                                navController.navigate("otheruserprofile/${person.parent}")
+                                println("UUUID:${person.parent}")
                             },
 
                         colors = CardDefaults.cardColors(Color.White)
@@ -107,4 +124,13 @@ fun SearchScreen(navController: NavController,modifier: Modifier = Modifier) {
             }
         }
     }
+}
+
+@Preview
+@Composable
+private fun searchscreenprev() {
+
+    SearchScreen(navController = NavController(LocalContext.current))
+
+
 }

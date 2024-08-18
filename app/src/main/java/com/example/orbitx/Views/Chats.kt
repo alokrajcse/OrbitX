@@ -1,8 +1,10 @@
-package com.example.chatbyme2.ui
+package com.example.orbitx.Views
 
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -26,12 +28,14 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
-import com.example.chatbyme2.ChatRepository.getChatRoomId
+import com.example.orbitx.ChatRepository.ChatViewModel
+import com.example.orbitx.ChatRepository.User
+import com.example.orbitx.ChatRepository.fetchProfileurl
+import com.example.orbitx.ChatRepository.getChatRoomId
 
-import com.example.chatbyme2.model.User
-import com.example.chatbyme2.viewmodel.ChatViewModel
 import com.example.orbitx.R
 import com.google.firebase.auth.ktx.auth
+import com.google.firebase.database.ktx.database
 import com.google.firebase.ktx.Firebase
 
 @Composable
@@ -80,9 +84,17 @@ fun FirebaseUI(navController: NavHostController, viewModel: ChatViewModel = view
 
         Spacer(modifier = Modifier.height(0.dp))
 
-        users.forEachIndexed { index, user ->
-            ChatItem(index = index, user = user, navController = navController, viewModel = viewModel)
+
+
+        LazyColumn {
+
+            itemsIndexed(users) { index, user ->
+                ChatItem(index = index, user = user, navController = navController, viewModel = viewModel)
+            }
         }
+
+
+
     }
 }
 
@@ -90,6 +102,14 @@ fun FirebaseUI(navController: NavHostController, viewModel: ChatViewModel = view
 fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel: ChatViewModel) {
     val roomId = getChatRoomId(user.userId, Firebase.auth.currentUser?.uid ?: "")
     val lastTime by viewModel.getLastTime(roomId).observeAsState("")
+    var profilePictureUrl by remember { mutableStateOf("") }
+    fetchProfileurl(user.userId) { url ->profilePictureUrl=url}
+    var onlinestatus by remember { mutableStateOf(false) }
+
+    Firebase.database.getReference("users").child(user.userId).child("online")
+        .get().addOnSuccessListener {
+            onlinestatus = it.getValue(Boolean::class.java) ?: false
+        }
 
     Card(
         onClick = { navController.navigate("MainChatScreen/${user.userId}") },
@@ -108,7 +128,7 @@ fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data("https://cdn-icons-png.flaticon.com/128/4322/4322991.png")
+                    .data(profilePictureUrl)
                     .crossfade(true)
                     .build(),
                 placeholder = painterResource(R.drawable.avataricon),
@@ -121,16 +141,29 @@ fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel
             )
 
             Box(modifier = Modifier.weight(1f) ){
-                Text(
-                    text = user.username,
-                    fontSize = 20.sp,
-                    fontStyle = FontStyle.Normal,
-                    fontWeight = FontWeight.Bold,
-                    textAlign = TextAlign.Start,
-                    modifier = Modifier
-                        .padding(15.dp)
+               Column(modifier = Modifier.padding(start = 10.dp)) {
+                   Text(
+                       text = user.username,
+                       fontSize = 22.sp,
+                       fontStyle = FontStyle.Normal,
+                       fontWeight = FontWeight.Bold,
+                       textAlign = TextAlign.Start,
+                       modifier = Modifier
+                           .padding(2.dp)
 
-                )
+                   )
+                   Text(
+                       text = if (onlinestatus) "Online" else "Offline",
+                       fontSize = 16.sp,
+                       fontStyle = FontStyle.Normal,
+                       fontWeight = FontWeight.Bold,
+                       textAlign = TextAlign.Start,
+                       modifier = Modifier
+                           .padding(2.dp),
+                       color = if (onlinestatus) Color.Magenta else Color.Gray
+
+                   )
+               }
             }
 
             Text(text = lastTime, textAlign = TextAlign.End)

@@ -1,4 +1,4 @@
-package com.example.chatbyme2.model
+package com.example.orbitx.ChatRepository
 
 data class MessageCard(
     val message: String = "",

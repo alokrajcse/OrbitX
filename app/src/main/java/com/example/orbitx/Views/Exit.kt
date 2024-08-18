@@ -20,13 +20,20 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.core.app.ActivityCompat
 import androidx.navigation.NavController
+import com.example.orbitx.ChatRepository.fetchcurrentuid
 import com.example.orbitx.R
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.ktx.auth
 import com.google.firebase.ktx.Firebase
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun Exit(modifier: Modifier = Modifier, activity: Activity, navController: NavController
 ) {
+
 
     Box(modifier = Modifier.fillMaxSize()){
         Image(painter = painterResource(id = R.drawable.bg), contentDescription = "", modifier = Modifier.fillMaxSize(), contentScale = ContentScale.Crop)
@@ -36,6 +43,7 @@ fun Exit(modifier: Modifier = Modifier, activity: Activity, navController: NavCo
 
     when {
 
+
         openAlertDialog.value -> {
             AlertDialogExample(
                 onDismissRequest = {
@@ -43,8 +51,23 @@ fun Exit(modifier: Modifier = Modifier, activity: Activity, navController: NavCo
                     openAlertDialog.value = false },
                 onConfirmation = {
                     openAlertDialog.value = false
-                    Firebase.auth.signOut()
-                    ActivityCompat.finishAffinity(activity)
+
+
+
+                        if (FirebaseAuth.getInstance().currentUser != null) {
+                            fetchcurrentuid { currentUserId ->
+                                // Ensure the currentUserId is not empty before subscribing
+                                if (currentUserId.isNotEmpty()) {
+                                    FirebaseMessaging.getInstance().unsubscribeFromTopic("message$currentUserId").addOnSuccessListener {
+
+                                        Firebase.auth.signOut()
+                                        ActivityCompat.finishAffinity(activity)
+                                    }
+                                }
+                            }
+                        }
+
+
 
 
                 },
