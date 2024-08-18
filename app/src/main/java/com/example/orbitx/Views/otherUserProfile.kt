@@ -122,7 +122,6 @@ fun otherUserProfileSection(
                             imageUrl = profilePictureUrl,
                             size = 100.dp
                         )
-
                         Column(
                             modifier = Modifier
                                 .weight(1f)
