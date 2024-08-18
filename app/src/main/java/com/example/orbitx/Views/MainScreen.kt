@@ -161,7 +161,7 @@ fun MainScreen(activity: Activity) {
                 otherUserProfileSection(data=data,userProfile = UserProfile(
                     profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
 
-                )
+                ), navController = navController
                 )
             }
         }
