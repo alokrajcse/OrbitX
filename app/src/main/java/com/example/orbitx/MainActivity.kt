@@ -1,7 +1,12 @@
 package com.example.orbitx
 
+
 import android.annotation.SuppressLint
+import android.Manifest
+import android.content.pm.PackageManager
+import android.os.Build
 import android.os.Bundle
+import android.widget.Toast
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.Image
@@ -21,64 +26,69 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavController
 import com.example.orbitx.Navigation.AppNavigation
-import com.example.orbitx.Views.InstagramFeed
 import com.example.orbitx.ui.theme.OrbitXTheme
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
+import com.example.orbitx.ChatRepository.setUserOffline
+import com.example.orbitx.ChatRepository.setUserOnline
+import com.example.orbitx.ChatRepository.setupPresenceSystem
+import com.example.orbitx.Navigation.AppNavigation
+import com.example.orbitx.ui.theme.OrbitXTheme
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.FirebaseDatabase
 
 class MainActivity : ComponentActivity() {
+    private val userId: String? = FirebaseAuth.getInstance().currentUser?.uid
+    override fun onStart() {
+        super.onStart()
+        userId?.let {
+            setUserOnline(it)
+            setupPresenceSystem(it)
+        }
+    }
+
+    override fun onStop() {
+        super.onStop()
+        userId?.let { setUserOffline(it) }
+    }
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
+        window.statusBarColor = android.graphics.Color.BLACK
+
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
+            if (ContextCompat.checkSelfPermission(
+                    this,
+                    Manifest.permission.POST_NOTIFICATIONS
+                ) != PackageManager.PERMISSION_GRANTED
+            ) {
+                requestNotificationPermission()
+            }
+        }
+
         setContent {
             OrbitXTheme {
-                AppNavigation(activity = this)
+                AppNavigation(activity = this, intent = intent)
             }
         }
     }
-}
 
-@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-@Composable
-fun HomeScreen(navController: NavController) {
-    val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
-    Scaffold(
-        modifier = Modifier.fillMaxSize(),
-        topBar = {
-            Box(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .background( Brush.verticalGradient(listOf(Color(0xFFF85A4F), Color(0xFFE49E99))))
-            ) {
-                Row(
-                    verticalAlignment = Alignment.CenterVertically,
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(5.dp)
-                ) {
-                    Text(
-                        text = "OrbitX",
-                        modifier = Modifier
-                            .padding(10.dp)
-                            .weight(1f),
-                        fontSize = 25.sp,
-                        fontWeight = FontWeight.Bold,
-                        fontFamily = urbanistMedium,
-                        color = Color.Black
-                    )
 
-                    IconButton(onClick = { navController.navigate("chats") }) {
-                        Image(
-                            painter = painterResource(id = R.drawable.messagebutton),
-                            contentDescription = "",
-                            modifier = Modifier.height(30.dp)
-                        )
-                    }
+    private fun requestNotificationPermission() {
+        val requestPermissionLauncher =
+            registerForActivityResult(ActivityResultContracts.RequestPermission()) { isGranted ->
+                if (isGranted) {
+                    showToast("Notifications enabled")
+                } else {
+                    showToast("Notifications permission denied")
+
                 }
             }
-        }
-    ) {
-        Box(modifier = Modifier.padding(top=60.dp)) {
-
-            InstagramFeed()
-        }
-
+        requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
     }
+
+    private fun showToast(message: String) {
+        Toast.makeText(this, message, Toast.LENGTH_SHORT).show()
+    }
+
 }

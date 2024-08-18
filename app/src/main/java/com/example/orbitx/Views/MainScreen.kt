@@ -1,5 +1,6 @@
 package com.example.orbitx.Views
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -17,9 +18,12 @@ import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.font.Font
+import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -30,12 +34,67 @@ import coil.compose.rememberImagePainter
 import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
-import com.example.orbitx.HomeScreen
+import androidx.navigation.NavController
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.model.Posts
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+@SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+@Composable
+fun HomeScreen(navController: NavController) {
+    val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
 
+
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        topBar = {
+            Box(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .background(
+                        Brush.verticalGradient(
+                            listOf(
+                                Color(0xFFF85A4F),
+                                Color(0xFFE49E99)
+                            )
+                        )
+                    )
+            ) {
+                Row(
+                    verticalAlignment = Alignment.CenterVertically,
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(5.dp)
+                ) {
+                    Text(
+                        text = "OrbitX",
+                        modifier = Modifier
+                            .padding(10.dp)
+                            .weight(1f),
+                        fontSize = 25.sp,
+                        fontWeight = FontWeight.Bold,
+                        fontFamily = urbanistMedium,
+                        color = Color.Black
+                    )
+
+                    IconButton(onClick = { navController.navigate("chats") }) {
+                        Image(
+                            painter = painterResource(id = R.drawable.messagebutton),
+                            contentDescription = "",
+                            modifier = Modifier.height(30.dp)
+                        )
+                    }
+                }
+            }
+        }
+    ) {
+        Box(modifier = Modifier.padding(top=60.dp)) {
+
+            InstagramFeed()
+        }
+
+    }
+}
 @Composable
 fun MainScreen(activity: Activity) {
     val navController = rememberNavController()
@@ -67,10 +126,10 @@ fun MainScreen(activity: Activity) {
                 SearchScreen(navController)
             }
             composable("newpost") {
-                CreatePostScreen()
+                CreatePostScreen(navController,modifier = Modifier.padding(innerPadding))
             }
             composable("profile") {
-                myProfileScreen(userProfile = UserProfile2(
+                myProfileScreen(navController,userProfile = UserProfile2(
                     profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
                     username = "Shreya_12",
                     bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
@@ -81,6 +140,11 @@ fun MainScreen(activity: Activity) {
                 )
                 )
             }
+
+            composable("editprofile") {
+               EditProfileScreen(navController)
+            }
+
             composable("logout") {
                 Exit(activity = activity, navController = navController)
             }
@@ -96,12 +160,7 @@ fun MainScreen(activity: Activity) {
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 otherUserProfileSection(data=data,userProfile = UserProfile(
                     profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
-                    username = "Alex",
-                    bio = "Software engineer and cat lover",
-                    isFollowing = true,
-                    postCount = 10,
-                    followerCount = 1000,
-                    followingCount = 500
+
                 )
                 )
             }

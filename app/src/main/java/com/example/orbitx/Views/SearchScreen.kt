@@ -46,7 +46,9 @@ fun SearchScreen(navController: NavController,modifier: Modifier = Modifier) {
             modifier = modifier
                 .fillMaxSize()
 
-        ) {
+        )
+
+        {
 
             Box(modifier = Modifier
                 .fillMaxWidth()

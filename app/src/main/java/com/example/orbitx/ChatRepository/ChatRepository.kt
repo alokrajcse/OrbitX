@@ -22,7 +22,6 @@ object ChatRepository {
             }
 
             override fun onCancelled(error: DatabaseError) {
-                // Handle error
                 liveData.value = "Error"
             }
         })

@@ -25,8 +25,22 @@ import com.google.firebase.database.ValueEventListener
 
 
 import androidx.compose.runtime.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.colorResource
 import com.example.orbitx.ChatRepository.ChatRepository
 import com.example.orbitx.ChatRepository.User
+import com.example.orbitx.ChatRepository.fetchBio
+import com.example.orbitx.ChatRepository.fetchFollowerCount
+import com.example.orbitx.ChatRepository.fetchFollowingCount
+import com.example.orbitx.Notification.topicRepository
+import com.example.orbitx.R
+import com.google.firebase.Firebase
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.database.database
+import com.google.firebase.database.ktx.database
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 @Composable
 fun otherUserProfileSection(
@@ -37,12 +51,33 @@ fun otherUserProfileSection(
     // State to hold the fetched username
     var username by remember { mutableStateOf<String?>(null) }
 
+    var isFollowing by remember { mutableStateOf(userProfile.isFollowing) }
 
-    // Fetch the username
+    var followerCount by remember { mutableStateOf(userProfile.followerCount) }
+    var followingCount by remember { mutableStateOf(userProfile.followingCount) }
+
+    var bio by remember { mutableStateOf(userProfile.bio) }
+
+
+
     LaunchedEffect(data) {
         getUsername(data) { fetchedUsername ->
             username = fetchedUsername
         }
+
+        fetchFollowerCount(data) { count -> followerCount = count }
+        fetchFollowingCount(data) { count -> followingCount = count }
+
+        fetchBio(data){b->bio=b}
+
+        val currentUserUid = FirebaseAuth.getInstance().currentUser!!.uid
+        Firebase.database.getReference("users").child(currentUserUid).child("following").child(data)
+            .get().addOnSuccessListener { snapshot ->
+                isFollowing = snapshot.exists()
+            }
+
+
+
     }
 
     Column(
@@ -70,18 +105,53 @@ fun otherUserProfileSection(
                     style = MaterialTheme.typography.headlineMedium
                 )
                 Text(
-                    text = userProfile.bio,
+                    text = bio,
                     style = MaterialTheme.typography.bodyLarge,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                     modifier = Modifier.padding(top = 4.dp)
                 )
             }
         }
+
         FollowButton(
-            isFollowing = userProfile.isFollowing,
-            onClick = { /* handle follow/unfollow action */ },
+            isFollowing = isFollowing,
+            onClick = {
+                val userUid = FirebaseAuth.getInstance().currentUser!!.uid
+                val ref = Firebase.database.getReference("users").child(userUid).child("following").child(data)
+                val ref2 = Firebase.database.getReference("users").child(data).child("followers").child(userUid)
+
+                ref.get().addOnSuccessListener { snapshot ->
+                    val current = snapshot.getValue(Boolean::class.java) ?: false
+
+                    if (current) {
+                        ref2.removeValue().addOnSuccessListener {
+                            ref.removeValue().addOnSuccessListener {
+                                isFollowing = false
+                                followerCount--
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    topicRepository().unsubscribe("messagefrom"+data+"to"+userUid)
+                                }
+                            }
+                        }
+                    } else {
+                        ref.setValue(true).addOnSuccessListener {
+                            ref2.setValue(true).addOnSuccessListener {
+                                isFollowing = true
+                                followerCount++
+                                CoroutineScope(Dispatchers.IO).launch {
+                                    topicRepository().subscribe("messagefrom"+data+"to"+userUid)
+                                }
+
+                            }
+                        }
+                    }
+                }.addOnFailureListener {
+                    // Handle any error cases if needed
+                }
+            },
             modifier = Modifier.padding(top = 16.dp)
         )
+
 
         Row(
             modifier = Modifier
@@ -95,11 +165,11 @@ fun otherUserProfileSection(
             )
             ProfileStat(
                 label = "Followers",
-                value = userProfile.followerCount.toString()
+                value = followerCount.toString()
             )
             ProfileStat(
                 label = "Following",
-                value = userProfile.followingCount.toString()
+                value = followingCount.toString()
             )
         }
     }
@@ -110,7 +180,8 @@ private fun UserProfilePicture(
     imageUrl: String,
     size: Dp,
     modifier: Modifier = Modifier
-) {
+)
+{
     Image(
         painter = rememberAsyncImagePainter(
             ImageRequest.Builder(LocalContext.current)
@@ -137,7 +208,7 @@ private fun FollowButton(
         onClick = onClick,
         modifier = modifier.fillMaxWidth(),
         colors = ButtonDefaults.buttonColors(
-            containerColor = if (isFollowing) MaterialTheme.colorScheme.error else MaterialTheme.colorScheme.primary
+            containerColor = if (isFollowing) Color.DarkGray else colorResource(id = R.color.orange)
         )
     ) {
         Text(
@@ -170,13 +241,14 @@ private fun ProfileStat(
 }
 
 data class UserProfile(
-    val profilePictureUrl: String,
-    val username: String,
-    val bio: String,
-    val isFollowing: Boolean,
-    val postCount: Int,
-    val followerCount: Int,
-    val followingCount: Int
+    val profilePictureUrl: String="",
+    val username: String="",
+    val bio: String="This is my bio",
+    val isFollowing: Boolean=false,
+    val postCount: Int=0,
+    val followerCount: Int=0,
+    val followingCount: Int=0,
+
 )
 
 fun getUsername(data: String, callback: (String?) -> Unit) {
@@ -198,3 +270,7 @@ fun getUsername(data: String, callback: (String?) -> Unit) {
         }
     })
 }
+
+
+
+

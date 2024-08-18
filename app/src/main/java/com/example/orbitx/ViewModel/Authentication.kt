@@ -2,12 +2,20 @@ package com.example.orbitx.ViewModel
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
+
+import androidx.lifecycle.viewModelScope
+import com.example.orbitx.ChatRepository.fetchcurrentuid
 import com.example.orbitx.model.Posts
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
 import com.google.firebase.ktx.Firebase
+
+import com.google.firebase.messaging.FirebaseMessaging
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+
 
 class AuthViewModel : ViewModel() {
     private val db = FirebaseFirestore.getInstance()
@@ -27,8 +35,18 @@ class AuthViewModel : ViewModel() {
         auth.signInWithEmailAndPassword(email, password)
             .addOnCompleteListener { task ->
                 if (task.isSuccessful) {
+                    if (FirebaseAuth.getInstance().currentUser != null) {
+                        fetchcurrentuid { currentUserId ->
+                            // Ensure the currentUserId is not empty before subscribing
+                            if (currentUserId.isNotEmpty()) {
+                                FirebaseMessaging.getInstance().subscribeToTopic("message$currentUserId").addOnSuccessListener {
+                                    onNavigateToHome()
 
-                    onNavigateToHome()
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
     }
