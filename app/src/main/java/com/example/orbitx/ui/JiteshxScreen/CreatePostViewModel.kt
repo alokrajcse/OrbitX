@@ -5,6 +5,7 @@ import android.net.Uri
 import android.util.Log
 import android.widget.Toast
 import androidx.lifecycle.ViewModel
+import androidx.navigation.NavController
 import com.example.orbitx.model.Post
 import com.example.orbitx.model.PostRepository
 import com.google.firebase.auth.FirebaseAuth
@@ -38,7 +39,7 @@ class CreatePostViewModel : ViewModel() {
         _imageUri.value = uri
     }
 
-    fun createPost(context: Context) {
+    fun createPost(context: Context, navController: NavController) {
         _isPostCreated.value = true
         if (text.value.isBlank() || imageUri.value == null) {
             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -60,7 +61,11 @@ class CreatePostViewModel : ViewModel() {
             )
             repository.createPost(post)
                 .addOnSuccessListener {
+
+                    navController.navigateUp()
                     Toast.makeText(context, "Post created successfully", Toast.LENGTH_SHORT).show()
+
+
                 }
                 .addOnFailureListener {
                     Toast.makeText(context, "Failed to create post", Toast.LENGTH_SHORT).show()

@@ -35,7 +35,7 @@ fun fetchBio(data: String, onBioReceived: (String) -> Unit) {
 }
 
 fun fetchProfileurl(data: String, onBioReceived: (String) -> Unit) {
-    Firebase.database.getReference("users").child(data).child("profilepicurl")
+    Firebase.database.getReference("users").child(data).child("profilepictureurl")
         .get().addOnSuccessListener { snapshot ->
             val bio = snapshot.getValue(String::class.java) ?: "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg"
             onBioReceived(bio)
