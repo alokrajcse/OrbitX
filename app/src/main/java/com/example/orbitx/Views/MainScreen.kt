@@ -2,10 +2,8 @@ package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
 import android.app.Activity
-import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
-import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
@@ -13,12 +11,7 @@ import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
-import androidx.compose.material.icons.outlined.AddCircle
-import androidx.compose.material.icons.outlined.ExitToApp
 import androidx.compose.material.icons.outlined.FavoriteBorder
-import androidx.compose.material.icons.outlined.Home
-import androidx.compose.material.icons.outlined.Person
-import androidx.compose.material.icons.outlined.Search
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
@@ -28,33 +21,24 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.navigation.NavController
 import androidx.navigation.NavType
 import androidx.navigation.compose.*
 import androidx.navigation.navArgument
 import coil.compose.rememberImagePainter
-
 import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
-import com.example.orbitx.model.BottomNavigationItem
 import androidx.lifecycle.viewmodel.compose.viewModel
-
+import androidx.navigation.NavController
 import com.example.orbitx.Navigation.BottomNavigationBar
-import com.example.orbitx.Views.ChatHomeScreen
-import com.example.orbitx.Views.CreatePostScreen
-import com.example.orbitx.Views.Exit
-import com.example.orbitx.Views.MainChatScreen
-import com.example.orbitx.Views.SearchScreen
-//import com.example.orbitx.Views.UserProfile
 import com.example.orbitx.model.Posts
-
+import com.google.accompanist.swiperefresh.SwipeRefresh
+import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavController) {
@@ -111,7 +95,6 @@ fun HomeScreen(navController: NavController) {
 
     }
 }
-
 @Composable
 fun MainScreen(activity: Activity) {
     val navController = rememberNavController()
@@ -178,14 +161,55 @@ fun MainScreen(activity: Activity) {
                 otherUserProfileSection(data=data,userProfile = UserProfile(
                     profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
 
-                )
+                ), navController = navController
                 )
             }
         }
     }
 }
+@Composable
+fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
+    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
+    var isRefreshing by remember { mutableStateOf(false) }
 
+    LaunchedEffect(Unit) {
+        viewModel.fetchPostsFromFirestore { posts ->
+            postsList = posts
+        }
+    }
 
+    SwipeRefresh(
+        state = rememberSwipeRefreshState(isRefreshing),
+        onRefresh = {
+            isRefreshing = true
+            viewModel.fetchPostsFromFirestore { posts ->
+                postsList = posts
+                isRefreshing = false
+            }
+        }
+    ) {
+        LazyColumn(
+            modifier = Modifier
+                .fillMaxSize()
+                .background(Color.White)
+        ) {
+            items(postsList) { post ->
+                InstagramPost(
+                    profileImageResId = R.drawable.avataricon,
+                    username = "username",
+                    location = "Indonesia",
+                    imageUrl = post.imageUrl,
+                    text = post.text,
+                    initialIsLiked = false,
+                    onComment = { /* Handle comment action */ },
+                    onShare = { /* Handle share action */ },
+                    onLikeChange = { isLiked ->
+                    }
+                )
+            }
+        }
+    }
+}
 
 @Composable
 fun InstagramPost(
@@ -204,7 +228,7 @@ fun InstagramPost(
     Column(
         modifier = Modifier
             .fillMaxWidth()
-            .padding(12.dp)
+            .padding(10.dp)
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically
@@ -215,7 +239,6 @@ fun InstagramPost(
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
-                    .border(1.dp, Color.Gray, CircleShape)
             )
 
             Spacer(modifier = Modifier.width(8.dp))
@@ -234,15 +257,13 @@ fun InstagramPost(
                 )
             }
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Card(
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(8.dp),
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(10.dp)
+                .padding(12.dp)
         ) {
             Image(
                 painter = rememberImagePainter(imageUrl),
@@ -254,11 +275,7 @@ fun InstagramPost(
             )
         }
         Spacer(modifier = Modifier.height(8.dp))
-        Row(
-            modifier = Modifier
-                .fillMaxWidth(),
-            horizontalArrangement = Arrangement.Start
-        ) {
+        Row {
             IconButton(onClick = {
                 isLiked = !isLiked
                 onLikeChange(isLiked)
@@ -267,70 +284,39 @@ fun InstagramPost(
                     imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
                     contentDescription = "Like",
                     tint = if (isLiked) Color.Red else Color.Black,
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(26.dp)
                 )
             }
             IconButton(onClick = onComment) {
                 Icon(
                     painter = painterResource(R.drawable.speech_bubble),
                     contentDescription = "Comment",
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(24.dp)
                 )
             }
             IconButton(onClick = onShare) {
                 Icon(
                     imageVector = Icons.Filled.Share,
                     contentDescription = "Share",
-                    modifier = Modifier.size(28.dp)
+                    modifier = Modifier.size(22.dp)
                 )
             }
         }
-
-        Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = "${if (isLiked) 311 else 310} Likes",
             fontWeight = FontWeight.Bold,
-            fontSize = 16.sp
+            fontSize = 14.sp,
+            modifier = Modifier.padding(start = 12.dp),
+
         )
         Text(
             text = text,
             fontSize = 14.sp,
-            modifier = Modifier.padding(top = 4.dp)
+            modifier = Modifier.padding(start = 12.dp),
+            lineHeight = 20.sp,
+
         )
-    }
-}
 
-@Composable
-fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
-    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
-
-    LaunchedEffect(Unit) {
-        viewModel.fetchPostsFromFirestore { posts ->
-            Log.d("InstagramFeed", "Fetched posts: $posts")
-            postsList = posts
-        }
-    }
-
-    LazyColumn(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color(0xFFFAFAFA))
-    ) {
-        items(postsList) { post ->
-            InstagramPost(
-                profileImageResId = R.drawable.avataricon,
-                username = "username",
-                location = "Indonesia",
-                imageUrl = post.imageUrl,
-                text = post.text,
-                initialIsLiked = false,
-                onComment = { /* Handle comment action */ },
-                onShare = { /* Handle share action */ },
-                onLikeChange = { isLiked ->
-
-                }
-            )
-        }
     }
 }
 

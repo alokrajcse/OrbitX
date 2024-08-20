@@ -73,3 +73,23 @@ fun setUserOffline(userId: String) {
     val ref = FirebaseDatabase.getInstance().getReference("users").child(userId)
     ref.child("online").setValue(false)
 }
+
+ fun setupPresenceSystem(userId: String) {
+      val database = FirebaseDatabase.getInstance()
+
+    val connectedRef = database.getReference(".info/connected")
+    connectedRef.addValueEventListener(object : com.google.firebase.database.ValueEventListener {
+        override fun onDataChange(snapshot: com.google.firebase.database.DataSnapshot) {
+            val connected = snapshot.getValue(Boolean::class.java) ?: false
+            if (connected) {
+                val userStatusRef = database.getReference("users/$userId/online")
+                userStatusRef.setValue(true)
+                userStatusRef.onDisconnect().setValue(false)
+            }
+        }
+
+        override fun onCancelled(error: com.google.firebase.database.DatabaseError) {
+
+        }
+    })
+}

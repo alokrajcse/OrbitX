@@ -67,6 +67,10 @@ import kotlinx.coroutines.tasks.await
 import androidx.navigation.NavController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
+import androidx.compose.ui.res.colorResource
+import com.example.orbitx.ChatRepository.fetchProfileurl
+import com.example.orbitx.ChatRepository.fetchusername
+import com.google.firebase.auth.auth
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -92,6 +96,17 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
             )
         )
     }
+    var cuid =Firebase.auth.currentUser?.uid.toString()
+
+    var profilepicurl by remember {
+        mutableStateOf("")
+    }
+    var username by remember {
+        mutableStateOf("")
+    }
+    fetchProfileurl(cuid){it->profilepicurl=it}
+    fetchusername(cuid){it->username=it}
+
     var focusedContainerColor by remember { mutableStateOf(Color(237, 222, 221)) }
 
     LaunchedEffect(Unit) {
@@ -128,29 +143,34 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
             sheetState = _sheetState,
             scrimColor = Color.Transparent,
             sheetContent = {
-                PostOptionsBottomSheet(
-                    textState = textState,
-                    imagePickerLauncher = imagePickerLauncher,
-                    imageUri = imageUri,
-                    onOptionSelected = { option ->
-                        // Handle option selection if needed
-                        coroutineScope.launch {
-                            _sheetState.hide()
+                Box(
+                    modifier = Modifier
+                        .offset(y = (-10).dp) // Adjust the offset value to move the sheet up
+                ) {
+                    PostOptionsBottomSheet(
+                        textState = textState,
+                        imagePickerLauncher = imagePickerLauncher,
+                        imageUri = imageUri,
+                        onOptionSelected = { option ->
+                            // Handle option selection if needed
+                            coroutineScope.launch {
+                                _sheetState.hide()
+                            }
+                        },
+                        onColorSelected = { color ->
+                            focusedContainerColor = color
+                        },
+                        locationText = locationText,
+                        onLocationTextChanged = { newLocationText ->
+                            locationText = newLocationText
+                            viewModel.onTextChanged("$text $locationText")
+                        },
+                        onHashtagTextChanged = { newHashtagText ->
+                            HashtagText = newHashtagText
+                            viewModel.onTextChanged("$text $locationText")
                         }
-                    },
-                    onColorSelected = { color ->
-                        focusedContainerColor = color
-                    },
-                    locationText = locationText,
-                    onLocationTextChanged = { newLocationText ->
-                        locationText = newLocationText
-                        viewModel.onTextChanged("$text $locationText")
-                    }, onHashtagTextChanged = { newHashtagText ->
-                        HashtagText = newHashtagText
-                        viewModel.onTextChanged("$text $locationText")
-                    }
-                )
-
+                    )
+                }
             }
         ) {
             Surface(
@@ -162,7 +182,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                 Column() {
                     TopBar(
                         onBackPressed = { navController.navigateUp() },
-                        onPostClicked = { viewModel.createPost(context) }
+                        onPostClicked = { viewModel.createPost(context,navController) }
                     )
                     Divider(
                         color = Color.LightGray, // Set the color of the divider
@@ -181,7 +201,10 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                             LinearProgressIndicator(
                                 modifier = Modifier
                                     .fillMaxWidth()
-                                    .padding(horizontal = 16.dp)
+                                    .padding(horizontal = 16.dp),
+                                trackColor = Color.LightGray,
+                                color = colorResource(id = R.color.orange)
+
                             )
                         }
                     }
@@ -193,7 +216,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                     ) {
                         AsyncImage(
                             model = ImageRequest.Builder(LocalContext.current)
-                                .data(authorAvatarUrl)
+                                .data(profilepicurl)
                                 .crossfade(true)
                                 .placeholder(R.drawable.ic_placeholder)
                                 .build(),
@@ -205,9 +228,10 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         Column(
                             Modifier
                                 .weight(1f)
+                                .padding(start = 8.dp)
                         ) {
                             Text(
-                                post.authorName,
+                                text=username,
                                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium),
                                 color = Color.Black
                             )
@@ -238,7 +262,8 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                 }
                                 Text(
                                     locationText,
-                                    modifier = Modifier.weight(0.5f)
+                                    modifier = Modifier
+                                        .weight(0.5f)
                                         .align(Alignment.CenterVertically),
                                     style = TextStyle(
                                         fontSize = 12.sp, // Adjust this value to change the font size
@@ -637,10 +662,13 @@ fun ColorPickerGrid(onColorSelected: (Color) -> Unit) {
 }
 @Composable
 fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
+
+
+
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(Color.White)
+            .background(colorResource(id = R.color.orange))
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -657,10 +685,10 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
             color = Color.Black
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.White) ){
+            colors = ButtonDefaults.buttonColors(containerColor = Color.Black) ){
             Text("Post",
                 style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 16.5.sp),
-                color = Color(249,97,47)
+                color = Color.White
             )
         }
     }
