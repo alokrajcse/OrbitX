@@ -81,7 +81,6 @@ class MainActivity : ComponentActivity() {
                     showToast("Notifications enabled")
                 } else {
                     showToast("Notifications permission denied")
-
                 }
             }
         requestPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)

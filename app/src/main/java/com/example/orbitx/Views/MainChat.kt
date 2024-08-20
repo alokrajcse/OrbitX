@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -346,7 +347,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
                 )
             )
             IconButton(onClick = { media.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
-                Icon(imageVector = Icons.Default.AddCircle, contentDescription = "", tint = Color.White)
+                Icon(imageVector = Icons.Default.Image, contentDescription = "", tint = Color.White)
             }
             IconButton(onClick = {
                 if (imageUri != null) {
