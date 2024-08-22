@@ -51,7 +51,7 @@ class CreatePostViewModel : ViewModel() {
             val post = Post(
                 text = text.value,
                 imageUrl = imageUrl,
-                ownerUid = FirebaseAuth.getInstance().currentUser!!.uid, // Get the current user's UID
+                owneruid = FirebaseAuth.getInstance().currentUser!!.uid, // Get the current user's UID
                 timestamp = System.currentTimeMillis(), // Get the current timestamp
                 likesCount = 0, // Initialize likes count to 0
                 commentsCount = 0, // Initialize comments count to 0

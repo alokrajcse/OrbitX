@@ -2,6 +2,7 @@ package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -21,6 +23,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -35,16 +38,117 @@ import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
+import com.example.orbitx.ChatRepository.User
+import com.example.orbitx.ChatRepository.fetchProfileurl
+import com.example.orbitx.ChatRepository.fetchcurrentuid
+import com.example.orbitx.ChatRepository.fetchusername
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.model.Posts
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+//@Composable
+//fun HomeScreen(navController: NavController) {
+//    val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
+//    var isRefreshing by remember { mutableStateOf(false) }
+//    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
+//
+//    val viewModel: AuthViewModel = viewModel()
+//    val userProfileData by viewModel.userProfileData.observeAsState(emptyList())
+//
+//    LaunchedEffect(Unit) {
+//        viewModel.fetchPostsFromFirestore { posts ->
+//            postsList = posts
+//            Log.d("HomeScreen", "Posts fetched: ${posts.size}")
+//        }
+//
+//    }
+//
+//
+//    Scaffold(
+//        modifier = Modifier.fillMaxSize(),
+//        topBar = {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(
+//                        Brush.verticalGradient(
+//                            listOf(
+//                                Color(0xFFF85A4F),
+//                                Color(0xFFE49E99)
+//                            )
+//                        )
+//                    )
+//            ) {
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(5.dp)
+//                ) {
+//                    Text(
+//                        text = "OrbitX",
+//                        modifier = Modifier
+//                            .padding(10.dp)
+//                            .weight(1f),
+//                        fontSize = 25.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        fontFamily = urbanistMedium,
+//                        color = Color.Black
+//                    )
+//
+//                    IconButton(onClick = { navController.navigate("chats") }) {
+//                        Image(
+//                            painter = painterResource(id = R.drawable.messagebutton),
+//                            contentDescription = "",
+//                            modifier = Modifier.height(30.dp)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    ) {
+//        Box(modifier = Modifier.padding(top = 60.dp)) {
+//            OrbitXFeed(
+//                userProfileData = userProfileData,
+//                postsList = postsList,
+//                onRefresh = {
+//                    isRefreshing = true
+//                    viewModel.fetchPostsFromFirestore { posts ->
+//                        postsList = posts
+//                        isRefreshing = false
+//                    }
+//                }
+//            )
+//        }
+//    }
+//}
+
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
+    var isRefreshing by remember { mutableStateOf(false) }
+    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
 
+    val viewModel: AuthViewModel = viewModel()
+    val userProfileData by viewModel.userProfileData.observeAsState(emptyList())
 
+    LaunchedEffect(Unit) {
+        viewModel.fetchPostsFromFirestore { posts ->
+            postsList = posts
+            Log.d("HomeScreen", "Posts fetched: ${posts.size}")
+        }
+        Log.d("HomeScreen", "UserProfileData: ${userProfileData.size}")
+        userProfileData.forEach { user ->
+            Log.d("HomeScreen", "User: ${user.username}, ${user.profilepictureurl}")
+        }
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -88,13 +192,24 @@ fun HomeScreen(navController: NavController) {
             }
         }
     ) {
-        Box(modifier = Modifier.padding(top=60.dp)) {
-
-            InstagramFeed()
+        Box(modifier = Modifier.padding(top = 60.dp)) {
+            OrbitXFeed(
+                userProfileData = userProfileData,
+                postsList = postsList,
+                onRefresh = {
+                    isRefreshing = true
+                    viewModel.fetchPostsFromFirestore { posts ->
+                        postsList = posts
+                        isRefreshing = false
+                        Log.d("HomeScreen", "Posts refreshed: ${posts.size}")
+                    }
+                }
+            )
         }
-
     }
 }
+
+
 @Composable
 fun MainScreen(activity: Activity) {
     val navController = rememberNavController()
@@ -126,10 +241,10 @@ fun MainScreen(activity: Activity) {
                 SearchScreen(navController)
             }
             composable("newpost") {
-                CreatePostScreen(navController,modifier = Modifier.padding(innerPadding))
+                CreatePostScreen(navController, modifier = Modifier.padding(innerPadding))
             }
             composable("profile") {
-                myProfileScreen(navController,userProfile = UserProfile2(
+                myProfileScreen(navController, userProfile = UserProfile2(
                     profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
                     username = "Shreya_12",
                     bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
@@ -137,14 +252,11 @@ fun MainScreen(activity: Activity) {
                     postCount = 5,
                     followerCount = 30,
                     followingCount = 12
-                )
-                )
+                ))
             }
-
             composable("editprofile") {
-               EditProfileScreen(navController)
+                EditProfileScreen(navController)
             }
-
             composable("logout") {
                 Exit(activity = activity, navController = navController)
             }
@@ -155,37 +267,24 @@ fun MainScreen(activity: Activity) {
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 MainChatScreen(navController, data)
             }
-
-            composable("otheruserprofile/{data}", arguments = listOf(navArgument("data") { type = NavType.StringType })) { backStackEntry ->
-                val data = backStackEntry.arguments?.getString("data") ?: ""
-                otherUserProfileSection(data=data,userProfile = UserProfile(
-                    profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
-
-                ), navController = navController
-                )
-            }
         }
     }
 }
-@Composable
-fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
-    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
-    var isRefreshing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchPostsFromFirestore { posts ->
-            postsList = posts
-        }
-    }
+@Composable
+fun OrbitXFeed(
+    userProfileData: List<User>,
+    postsList: List<Posts>,
+    onRefresh: () -> Unit
+) {
+    var isRefreshing by remember { mutableStateOf(false) }
 
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing),
         onRefresh = {
             isRefreshing = true
-            viewModel.fetchPostsFromFirestore { posts ->
-                postsList = posts
-                isRefreshing = false
-            }
+            onRefresh()
+            isRefreshing = false
         }
     ) {
         LazyColumn(
@@ -194,16 +293,26 @@ fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
                 .background(Color.White)
         ) {
             items(postsList) { post ->
-                InstagramPost(
-                    profileImageResId = R.drawable.avataricon,
-                    username = "username",
-                    location = "Indonesia",
+                val user = userProfileData.find { it.userId == post.owneruid }
+
+
+                OrbitXPost(
+                    profileImageUrl = user?.profilepictureurl ?: "",
+                    username = user?.username ?: "Unknown User",
+                    location = "Location",
+                    owneruserid = post.owneruid,
                     imageUrl = post.imageUrl,
                     text = post.text,
                     initialIsLiked = false,
-                    onComment = { /* Handle comment action */ },
+                    likesCount = post.likesCount,
+                    commentsCount = post.commentsCount,
+                    timestamp = post.timestamp,
+                    onComment = { commentText ->
+                        println("Comment posted: $commentText")
+                    },
                     onShare = { /* Handle share action */ },
                     onLikeChange = { isLiked ->
+                        // Handle like change
                     }
                 )
             }
@@ -212,18 +321,38 @@ fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
 }
 
 @Composable
-fun InstagramPost(
-    profileImageResId: Int,
+fun OrbitXPost(
+    profileImageUrl: String,
     username: String,
     location: String,
+    owneruserid: String,
     imageUrl: String,
     text: String,
     initialIsLiked: Boolean,
-    onComment: () -> Unit,
+    likesCount: Int,
+    commentsCount: Int,
+    timestamp: Long,
+    onComment: (String) -> Unit,
     onShare: () -> Unit,
-    onLikeChange: (Boolean) -> Unit
+    onLikeChange: (Boolean) -> Unit,
+    viewModel: AuthViewModel= viewModel(),
 ) {
     var isLiked by remember { mutableStateOf(initialIsLiked) }
+    var likeCounter by remember { mutableStateOf(likesCount) }
+    var isCommentDialogOpen by remember { mutableStateOf(false) }
+    var commentText by remember { mutableStateOf("") }
+    val formattedTimestamp = remember(timestamp) {
+        val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+        dateFormat.format(Date(timestamp))
+    }
+    var usrname by remember { mutableStateOf("") }
+    var profilepicurl by remember { mutableStateOf("") }
+
+    viewModel.fetchusername(owneruserid){it-> usrname=it}
+    viewModel.fetchProfileurl(owneruserid){it-> profilepicurl=it}
+
+
+
 
     Column(
         modifier = Modifier
@@ -233,9 +362,14 @@ fun InstagramPost(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = painterResource(profileImageResId),
-                contentDescription = "Profile image",
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(profilepicurl)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.avataricon),
+                contentDescription = "",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
@@ -245,7 +379,7 @@ fun InstagramPost(
 
             Column {
                 Text(
-                    text = username,
+                    text = usrname,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color.Black
@@ -257,7 +391,9 @@ fun InstagramPost(
                 )
             }
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Card(
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(8.dp),
@@ -274,10 +410,13 @@ fun InstagramPost(
                     .height(250.dp)
             )
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Row {
             IconButton(onClick = {
                 isLiked = !isLiked
+                likeCounter += if (isLiked) 1 else -1
                 onLikeChange(isLiked)
             }) {
                 Icon(
@@ -287,13 +426,15 @@ fun InstagramPost(
                     modifier = Modifier.size(26.dp)
                 )
             }
-            IconButton(onClick = onComment) {
+
+            IconButton(onClick = { isCommentDialogOpen = true }) {
                 Icon(
                     painter = painterResource(R.drawable.speech_bubble),
                     contentDescription = "Comment",
                     modifier = Modifier.size(24.dp)
                 )
             }
+
             IconButton(onClick = onShare) {
                 Icon(
                     imageVector = Icons.Filled.Share,
@@ -302,21 +443,63 @@ fun InstagramPost(
                 )
             }
         }
+
         Text(
-            text = "${if (isLiked) 311 else 310} Likes",
+            text = "$likeCounter Likes",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 12.dp),
-
+        )
+        Text(
+            text = "$commentsCount Comments",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 12.dp, top = 4.dp),
         )
         Text(
             text = text,
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 12.dp),
             lineHeight = 20.sp,
-
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = formattedTimestamp,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 12.dp, top = 4.dp),
+        )
+    }
 
+    if (isCommentDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { isCommentDialogOpen = false },
+            title = {
+                Text(text = "Add a Comment")
+            },
+            text = {
+                TextField(
+                    value = commentText,
+                    onValueChange = { commentText = it },
+                    placeholder = { Text(text = "Write your comment...") }
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onComment(commentText)
+                        isCommentDialogOpen = false
+                        commentText = ""
+                    }
+                ) {
+                    Text("Post")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { isCommentDialogOpen = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
-

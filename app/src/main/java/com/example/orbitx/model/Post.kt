@@ -3,7 +3,7 @@ package com.example.orbitx.model
 data class Post(
     val text: String,
     val imageUrl: String,
-    val ownerUid: String,
+    val owneruid: String,
     val timestamp: Long,
     val likesCount: Int,
     val commentsCount: Int,
@@ -14,12 +14,12 @@ data class Post(
 
 data class Comment(
     val text: String,
-    val ownerUid: String,
+    val owneruid: String,
     val timestamp: Long
 )
 
 data class Like(
-    val ownerUid: String,
+    val owneruid: String,
     val timestamp: Long
 )
 
