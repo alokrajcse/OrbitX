@@ -2,6 +2,7 @@ package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.material.icons.filled.*
 import androidx.compose.material.icons.outlined.FavoriteBorder
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.runtime.livedata.observeAsState
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -38,6 +40,7 @@ import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
+import com.example.orbitx.ChatRepository.User
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchcurrentuid
 import com.example.orbitx.ChatRepository.fetchusername
@@ -53,26 +56,16 @@ import java.util.Locale
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
-    var username by remember { mutableStateOf("") }
-    var profilePictureUrl by remember { mutableStateOf("") }
     var isRefreshing by remember { mutableStateOf(false) }
     var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
 
     val viewModel: AuthViewModel = viewModel()
+    val userProfileData by viewModel.userProfileData.observeAsState(emptyList())
 
-    LaunchedEffect(Unit) {
-        fetchcurrentuid { userId ->
-            fetchusername(userId) { name ->
-                username = name
-            }
-            fetchProfileurl(userId) { url ->
-                profilePictureUrl = url
-            }
-        }
-    }
     LaunchedEffect(Unit) {
         viewModel.fetchPostsFromFirestore { posts ->
             postsList = posts
+            Log.d("HomeScreen", "Posts fetched: ${posts.size}")
         }
     }
 
@@ -121,7 +114,7 @@ fun HomeScreen(navController: NavController) {
     ) {
         Box(modifier = Modifier.padding(top = 60.dp)) {
             OrbitXFeed(
-                username = username,
+                userProfileData = userProfileData,
                 postsList = postsList,
                 onRefresh = {
                     isRefreshing = true
@@ -129,13 +122,11 @@ fun HomeScreen(navController: NavController) {
                         postsList = posts
                         isRefreshing = false
                     }
-                },
-                profilePictureUrl = profilePictureUrl
+                }
             )
         }
     }
 }
-
 
 @Composable
 fun MainScreen(activity: Activity) {
@@ -199,10 +190,9 @@ fun MainScreen(activity: Activity) {
 }
 @Composable
 fun OrbitXFeed(
-    username: String,
+    userProfileData: List<User>,
     postsList: List<Posts>,
-    onRefresh: () -> Unit,
-    profilePictureUrl: String
+    onRefresh: () -> Unit
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -220,9 +210,13 @@ fun OrbitXFeed(
                 .background(Color.White)
         ) {
             items(postsList) { post ->
+                val user = userProfileData.find {
+                    it.userId == post.owneruserid
+                }
+
                 OrbitXPost(
-                    profileImageUrl = profilePictureUrl,
-                    username = username,
+                    profileImageUrl = user?.profilepictureurl ?: "",
+                    username = user?.username ?: "Unknown User",
                     location = "Location",
                     imageUrl = post.imageUrl,
                     text = post.text,
@@ -242,6 +236,9 @@ fun OrbitXFeed(
         }
     }
 }
+
+
+
 
 @Composable
 fun OrbitXPost(
@@ -416,4 +413,3 @@ fun OrbitXPost(
         )
     }
 }
-
