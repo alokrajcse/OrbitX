@@ -35,16 +35,41 @@ import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import com.example.orbitx.ChatRepository.fetchProfileurl
+import com.example.orbitx.ChatRepository.fetchcurrentuid
+import com.example.orbitx.ChatRepository.fetchusername
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.model.Posts
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
+
+
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
+    var username by remember { mutableStateOf("") }
+    var profilePictureUrl by remember { mutableStateOf("") }
+    var isRefreshing by remember { mutableStateOf(false) }
+    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
 
+    val viewModel: AuthViewModel = viewModel()
 
+    LaunchedEffect(Unit) {
+        fetchcurrentuid { userId ->
+            fetchusername(userId) { name ->
+                username = name
+            }
+            fetchProfileurl(userId) { url ->
+                profilePictureUrl = url
+            }
+        }
+    }
+    LaunchedEffect(Unit) {
+        viewModel.fetchPostsFromFirestore { posts ->
+            postsList = posts
+        }
+    }
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -88,13 +113,23 @@ fun HomeScreen(navController: NavController) {
             }
         }
     ) {
-        Box(modifier = Modifier.padding(top=60.dp)) {
-
-            InstagramFeed()
+        Box(modifier = Modifier.padding(top = 60.dp)) {
+            InstagramFeed(
+                username = username,
+                profilePictureUrl = profilePictureUrl,
+                postsList = postsList,
+                onRefresh = {
+                    isRefreshing = true
+                    viewModel.fetchPostsFromFirestore { posts ->
+                        postsList = posts
+                        isRefreshing = false
+                    }
+                }
+            )
         }
-
     }
 }
+
 @Composable
 fun MainScreen(activity: Activity) {
     val navController = rememberNavController()
@@ -126,10 +161,10 @@ fun MainScreen(activity: Activity) {
                 SearchScreen(navController)
             }
             composable("newpost") {
-                CreatePostScreen(navController,modifier = Modifier.padding(innerPadding))
+                CreatePostScreen(navController, modifier = Modifier.padding(innerPadding))
             }
             composable("profile") {
-                myProfileScreen(navController,userProfile = UserProfile2(
+                myProfileScreen(navController, userProfile = UserProfile2(
                     profilePictureUrl = "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg",
                     username = "Shreya_12",
                     bio = " \uD83C\uDF1F Passionate Software Engineer | Cat Lover \uD83D\uDC31 | Lifelong Learner \uD83D\uDCDA | ",
@@ -137,14 +172,11 @@ fun MainScreen(activity: Activity) {
                     postCount = 5,
                     followerCount = 30,
                     followingCount = 12
-                )
-                )
+                ))
             }
-
             composable("editprofile") {
-               EditProfileScreen(navController)
+                EditProfileScreen(navController)
             }
-
             composable("logout") {
                 Exit(activity = activity, navController = navController)
             }
@@ -155,37 +187,38 @@ fun MainScreen(activity: Activity) {
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 MainChatScreen(navController, data)
             }
-
-            composable("otheruserprofile/{data}", arguments = listOf(navArgument("data") { type = NavType.StringType })) { backStackEntry ->
+            composable(
+                route = "otheruserprofile/{data}",
+                arguments = listOf(navArgument(name = "data") { type = NavType.StringType })
+            ) { backStackEntry ->
                 val data = backStackEntry.arguments?.getString("data") ?: ""
-                otherUserProfileSection(data=data,userProfile = UserProfile(
-                    profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
-
-                ), navController = navController
+                otherUserProfileSection(
+                    data = data,
+                    navController = navController,
+                    userProfile = UserProfile(
+                        profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png"
+                    )
                 )
             }
         }
     }
 }
-@Composable
-fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
-    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
-    var isRefreshing by remember { mutableStateOf(false) }
 
-    LaunchedEffect(Unit) {
-        viewModel.fetchPostsFromFirestore { posts ->
-            postsList = posts
-        }
-    }
+@Composable
+fun InstagramFeed(
+    username: String,
+    profilePictureUrl: String,
+    postsList: List<Posts>,
+    onRefresh: () -> Unit
+) {
+    var isRefreshing by remember { mutableStateOf(false) }
 
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing),
         onRefresh = {
             isRefreshing = true
-            viewModel.fetchPostsFromFirestore { posts ->
-                postsList = posts
-                isRefreshing = false
-            }
+            onRefresh()
+            isRefreshing = false
         }
     ) {
         LazyColumn(
@@ -195,13 +228,18 @@ fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
         ) {
             items(postsList) { post ->
                 InstagramPost(
-                    profileImageResId = R.drawable.avataricon,
-                    username = "username",
-                    location = "Indonesia",
+                    profileImageUrl = profilePictureUrl,
+                    username = username,
+                    location = "Location",
                     imageUrl = post.imageUrl,
                     text = post.text,
                     initialIsLiked = false,
-                    onComment = { /* Handle comment action */ },
+                    likesCount = post.likesCount,
+                    commentsCount = post.commentsCount,
+                    timestamp = post.timestamp,
+                    onComment = { commentText ->
+                        println("Comment posted: $commentText")
+                    },
                     onShare = { /* Handle share action */ },
                     onLikeChange = { isLiked ->
                     }
@@ -210,20 +248,33 @@ fun InstagramFeed(viewModel: AuthViewModel = viewModel()) {
         }
     }
 }
-
 @Composable
 fun InstagramPost(
-    profileImageResId: Int,
+    profileImageUrl: String,
     username: String,
     location: String,
     imageUrl: String,
     text: String,
     initialIsLiked: Boolean,
-    onComment: () -> Unit,
+    likesCount: Int,
+    commentsCount: Int,
+    timestamp: Long,
+    onComment: (String) -> Unit,
     onShare: () -> Unit,
     onLikeChange: (Boolean) -> Unit
 ) {
     var isLiked by remember { mutableStateOf(initialIsLiked) }
+    var likeCounter by remember { mutableStateOf(likesCount) }
+
+    // State for handling the comment dialog
+    var isCommentDialogOpen by remember { mutableStateOf(false) }
+    var commentText by remember { mutableStateOf("") }
+
+    // Convert timestamp to a readable format
+    val formattedTimestamp = remember(timestamp) {
+        val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
+        dateFormat.format(java.util.Date(timestamp))
+    }
 
     Column(
         modifier = Modifier
@@ -234,7 +285,7 @@ fun InstagramPost(
             verticalAlignment = Alignment.CenterVertically
         ) {
             Image(
-                painter = painterResource(profileImageResId),
+                painter = rememberImagePainter(profileImageUrl),  // Use rememberImagePainter to load from URL
                 contentDescription = "Profile image",
                 modifier = Modifier
                     .size(40.dp)
@@ -257,7 +308,9 @@ fun InstagramPost(
                 )
             }
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Card(
             shape = RoundedCornerShape(16.dp),
             elevation = CardDefaults.cardElevation(8.dp),
@@ -274,10 +327,13 @@ fun InstagramPost(
                     .height(250.dp)
             )
         }
+
         Spacer(modifier = Modifier.height(8.dp))
+
         Row {
             IconButton(onClick = {
                 isLiked = !isLiked
+                likeCounter += if (isLiked) 1 else -1
                 onLikeChange(isLiked)
             }) {
                 Icon(
@@ -287,13 +343,15 @@ fun InstagramPost(
                     modifier = Modifier.size(26.dp)
                 )
             }
-            IconButton(onClick = onComment) {
+
+            IconButton(onClick = { isCommentDialogOpen = true }) {  // Open the comment dialog
                 Icon(
                     painter = painterResource(R.drawable.speech_bubble),
                     contentDescription = "Comment",
                     modifier = Modifier.size(24.dp)
                 )
             }
+
             IconButton(onClick = onShare) {
                 Icon(
                     imageVector = Icons.Filled.Share,
@@ -302,21 +360,64 @@ fun InstagramPost(
                 )
             }
         }
+
         Text(
-            text = "${if (isLiked) 311 else 310} Likes",
+            text = "$likeCounter Likes",
             fontWeight = FontWeight.Bold,
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 12.dp),
-
+        )
+        Text(
+            text = "$commentsCount Comments",
+            fontSize = 14.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 12.dp, top = 4.dp),
         )
         Text(
             text = text,
             fontSize = 14.sp,
             modifier = Modifier.padding(start = 12.dp),
             lineHeight = 20.sp,
-
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+            text = formattedTimestamp,
+            fontSize = 12.sp,
+            color = Color.Gray,
+            modifier = Modifier.padding(start = 12.dp, top = 4.dp),
+        )
+    }
 
+    // Comment Dialog
+    if (isCommentDialogOpen) {
+        AlertDialog(
+            onDismissRequest = { isCommentDialogOpen = false },
+            title = {
+                Text(text = "Add a Comment")
+            },
+            text = {
+                TextField(
+                    value = commentText,
+                    onValueChange = { commentText = it },
+                    placeholder = { Text(text = "Write your comment...") }
+                )
+            },
+            confirmButton = {
+                Button(
+                    onClick = {
+                        onComment(commentText)
+                        isCommentDialogOpen = false
+                        commentText = ""
+                    }
+                ) {
+                    Text("Post")
+                }
+            },
+            dismissButton = {
+                Button(onClick = { isCommentDialogOpen = false }) {
+                    Text("Cancel")
+                }
+            }
+        )
     }
 }
-
