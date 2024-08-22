@@ -184,7 +184,7 @@ fun ChatRoom(otherUserId: String, currentUserId: String, navController: NavContr
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    // Handle error
+
                 }
             })
         }
@@ -280,7 +280,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
 
     val media= rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia(), onResult = {
             uri-> if (uri!=null){
-        //text1=uri.toString()
+
                 sending=true
 
         var storageref= com.google.firebase.Firebase.storage.getReference("practice").child("part3")
@@ -292,7 +292,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
 
                 imageurl=it.toString()
                 val sdf = SimpleDateFormat("HH:mm")
-                val currentTime = sdf.format(Date())
+                val currentTime = System.currentTimeMillis().toString()
 
 
                 val messageData = MessageCard(
@@ -354,7 +354,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
 
                     textboxhint="Tap send button to send image"
                     val sdf = SimpleDateFormat("HH:mm")
-                    val currentTime = sdf.format(Date())
+                    val currentTime = System.currentTimeMillis().toString()
                     val storagePath = "chat_images/${chatRoomId}/${UUID.randomUUID()}.jpg"
                     val imageRef = storageRef.child(storagePath)
 
@@ -384,7 +384,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
                     }
                 } else if (message.isNotEmpty()) {
                     val sdf = SimpleDateFormat("HH:mm")
-                    val currentTime = sdf.format(Date())
+                    val currentTime = System.currentTimeMillis().toString()
                     val messageData = MessageCard(message, currentUserId, currentTime, "")
                     db.child("LastTime").child(chatRoomId).setValue(currentTime)
                     db.child("ChatRooms").child(chatRoomId).push().setValue(messageData)
