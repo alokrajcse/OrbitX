@@ -53,6 +53,83 @@ import java.util.Date
 import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
+//@Composable
+//fun HomeScreen(navController: NavController) {
+//    val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
+//    var isRefreshing by remember { mutableStateOf(false) }
+//    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
+//
+//    val viewModel: AuthViewModel = viewModel()
+//    val userProfileData by viewModel.userProfileData.observeAsState(emptyList())
+//
+//    LaunchedEffect(Unit) {
+//        viewModel.fetchPostsFromFirestore { posts ->
+//            postsList = posts
+//            Log.d("HomeScreen", "Posts fetched: ${posts.size}")
+//        }
+//
+//    }
+//
+//
+//    Scaffold(
+//        modifier = Modifier.fillMaxSize(),
+//        topBar = {
+//            Box(
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .background(
+//                        Brush.verticalGradient(
+//                            listOf(
+//                                Color(0xFFF85A4F),
+//                                Color(0xFFE49E99)
+//                            )
+//                        )
+//                    )
+//            ) {
+//                Row(
+//                    verticalAlignment = Alignment.CenterVertically,
+//                    modifier = Modifier
+//                        .fillMaxWidth()
+//                        .padding(5.dp)
+//                ) {
+//                    Text(
+//                        text = "OrbitX",
+//                        modifier = Modifier
+//                            .padding(10.dp)
+//                            .weight(1f),
+//                        fontSize = 25.sp,
+//                        fontWeight = FontWeight.Bold,
+//                        fontFamily = urbanistMedium,
+//                        color = Color.Black
+//                    )
+//
+//                    IconButton(onClick = { navController.navigate("chats") }) {
+//                        Image(
+//                            painter = painterResource(id = R.drawable.messagebutton),
+//                            contentDescription = "",
+//                            modifier = Modifier.height(30.dp)
+//                        )
+//                    }
+//                }
+//            }
+//        }
+//    ) {
+//        Box(modifier = Modifier.padding(top = 60.dp)) {
+//            OrbitXFeed(
+//                userProfileData = userProfileData,
+//                postsList = postsList,
+//                onRefresh = {
+//                    isRefreshing = true
+//                    viewModel.fetchPostsFromFirestore { posts ->
+//                        postsList = posts
+//                        isRefreshing = false
+//                    }
+//                }
+//            )
+//        }
+//    }
+//}
+
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
@@ -67,8 +144,11 @@ fun HomeScreen(navController: NavController) {
             postsList = posts
             Log.d("HomeScreen", "Posts fetched: ${posts.size}")
         }
+        Log.d("HomeScreen", "UserProfileData: ${userProfileData.size}")
+        userProfileData.forEach { user ->
+            Log.d("HomeScreen", "User: ${user.username}, ${user.profilepictureurl}")
+        }
     }
-
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -121,12 +201,14 @@ fun HomeScreen(navController: NavController) {
                     viewModel.fetchPostsFromFirestore { posts ->
                         postsList = posts
                         isRefreshing = false
+                        Log.d("HomeScreen", "Posts refreshed: ${posts.size}")
                     }
                 }
             )
         }
     }
 }
+
 
 @Composable
 fun MainScreen(activity: Activity) {
@@ -188,6 +270,7 @@ fun MainScreen(activity: Activity) {
         }
     }
 }
+
 @Composable
 fun OrbitXFeed(
     userProfileData: List<User>,
@@ -210,9 +293,7 @@ fun OrbitXFeed(
                 .background(Color.White)
         ) {
             items(postsList) { post ->
-                val user = userProfileData.find {
-                    it.userId == post.owneruserid
-                }
+                val user = userProfileData.find { it.userId == post.owneruid }
 
                 OrbitXPost(
                     profileImageUrl = user?.profilepictureurl ?: "",
@@ -236,9 +317,6 @@ fun OrbitXFeed(
         }
     }
 }
-
-
-
 
 @Composable
 fun OrbitXPost(
