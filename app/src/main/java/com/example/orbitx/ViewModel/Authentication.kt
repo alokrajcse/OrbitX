@@ -12,6 +12,7 @@ import com.google.firebase.database.DataSnapshot
 import com.google.firebase.database.DatabaseError
 import com.google.firebase.database.FirebaseDatabase
 import com.google.firebase.database.ValueEventListener
+import com.google.firebase.database.database
 import com.google.firebase.database.ktx.database
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.toObject
@@ -102,6 +103,26 @@ class AuthViewModel : ViewModel() {
                     writeNewUser(auth.currentUser?.uid.toString(), email, username)
                     onNavigateBackToLogin()
                 }
+            }
+    }
+    fun fetchusername(data: String, onReceivedname:(String)->Unit){
+        com.google.firebase.Firebase.database.getReference("users").child(data).child("username")
+            .get().addOnSuccessListener {
+                    snapshot->
+                val name=snapshot.getValue(String::class.java)?:"Old User"
+                onReceivedname(name)
+            }.addOnFailureListener {
+                Log.e("Firebase", "Failed to fetch username", it)
+            }
+
+    }
+    fun fetchProfileurl(data: String, onUrlReceived: (String) -> Unit) {
+        com.google.firebase.Firebase.database.getReference("users").child(data).child("profilepictureurl")
+            .get().addOnSuccessListener { snapshot ->
+                val url = snapshot.getValue(String::class.java) ?: "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg"
+                onUrlReceived(url)
+            }.addOnFailureListener {
+                Log.e("Firebase", "Failed to fetch bio", it)
             }
     }
 }
