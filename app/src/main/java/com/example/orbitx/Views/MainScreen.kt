@@ -21,6 +21,7 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
@@ -35,6 +36,8 @@ import com.example.orbitx.R
 import com.example.orbitx.ViewModel.AuthViewModel
 import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
+import coil.compose.AsyncImage
+import coil.request.ImageRequest
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchcurrentuid
 import com.example.orbitx.ChatRepository.fetchusername
@@ -42,7 +45,9 @@ import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.model.Posts
 import com.google.accompanist.swiperefresh.SwipeRefresh
 import com.google.accompanist.swiperefresh.rememberSwipeRefreshState
-
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @Composable
@@ -70,6 +75,7 @@ fun HomeScreen(navController: NavController) {
             postsList = posts
         }
     }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         topBar = {
@@ -114,9 +120,8 @@ fun HomeScreen(navController: NavController) {
         }
     ) {
         Box(modifier = Modifier.padding(top = 60.dp)) {
-            InstagramFeed(
+            OrbitXFeed(
                 username = username,
-                profilePictureUrl = profilePictureUrl,
                 postsList = postsList,
                 onRefresh = {
                     isRefreshing = true
@@ -124,11 +129,13 @@ fun HomeScreen(navController: NavController) {
                         postsList = posts
                         isRefreshing = false
                     }
-                }
+                },
+                profilePictureUrl = profilePictureUrl
             )
         }
     }
 }
+
 
 @Composable
 fun MainScreen(activity: Activity) {
@@ -187,29 +194,15 @@ fun MainScreen(activity: Activity) {
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 MainChatScreen(navController, data)
             }
-            composable(
-                route = "otheruserprofile/{data}",
-                arguments = listOf(navArgument(name = "data") { type = NavType.StringType })
-            ) { backStackEntry ->
-                val data = backStackEntry.arguments?.getString("data") ?: ""
-                otherUserProfileSection(
-                    data = data,
-                    navController = navController,
-                    userProfile = UserProfile(
-                        profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png"
-                    )
-                )
-            }
         }
     }
 }
-
 @Composable
-fun InstagramFeed(
+fun OrbitXFeed(
     username: String,
-    profilePictureUrl: String,
     postsList: List<Posts>,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    profilePictureUrl: String
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
 
@@ -227,7 +220,7 @@ fun InstagramFeed(
                 .background(Color.White)
         ) {
             items(postsList) { post ->
-                InstagramPost(
+                OrbitXPost(
                     profileImageUrl = profilePictureUrl,
                     username = username,
                     location = "Location",
@@ -242,14 +235,16 @@ fun InstagramFeed(
                     },
                     onShare = { /* Handle share action */ },
                     onLikeChange = { isLiked ->
+                        // Handle like change
                     }
                 )
             }
         }
     }
 }
+
 @Composable
-fun InstagramPost(
+fun OrbitXPost(
     profileImageUrl: String,
     username: String,
     location: String,
@@ -265,15 +260,11 @@ fun InstagramPost(
 ) {
     var isLiked by remember { mutableStateOf(initialIsLiked) }
     var likeCounter by remember { mutableStateOf(likesCount) }
-
-    // State for handling the comment dialog
     var isCommentDialogOpen by remember { mutableStateOf(false) }
     var commentText by remember { mutableStateOf("") }
-
-    // Convert timestamp to a readable format
     val formattedTimestamp = remember(timestamp) {
-        val dateFormat = java.text.SimpleDateFormat("dd MMM yyyy, HH:mm", java.util.Locale.getDefault())
-        dateFormat.format(java.util.Date(timestamp))
+        val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+        dateFormat.format(Date(timestamp))
     }
 
     Column(
@@ -284,9 +275,14 @@ fun InstagramPost(
         Row(
             verticalAlignment = Alignment.CenterVertically
         ) {
-            Image(
-                painter = rememberImagePainter(profileImageUrl),  // Use rememberImagePainter to load from URL
-                contentDescription = "Profile image",
+            AsyncImage(
+                model = ImageRequest.Builder(LocalContext.current)
+                    .data(profileImageUrl)
+                    .crossfade(true)
+                    .build(),
+                placeholder = painterResource(R.drawable.avataricon),
+                contentDescription = "",
+                contentScale = ContentScale.Crop,
                 modifier = Modifier
                     .size(40.dp)
                     .clip(CircleShape)
@@ -344,7 +340,7 @@ fun InstagramPost(
                 )
             }
 
-            IconButton(onClick = { isCommentDialogOpen = true }) {  // Open the comment dialog
+            IconButton(onClick = { isCommentDialogOpen = true }) {
                 Icon(
                     painter = painterResource(R.drawable.speech_bubble),
                     contentDescription = "Comment",
@@ -388,7 +384,6 @@ fun InstagramPost(
         )
     }
 
-    // Comment Dialog
     if (isCommentDialogOpen) {
         AlertDialog(
             onDismissRequest = { isCommentDialogOpen = false },
@@ -421,3 +416,4 @@ fun InstagramPost(
         )
     }
 }
+
