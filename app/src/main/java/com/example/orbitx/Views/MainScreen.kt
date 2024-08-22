@@ -295,10 +295,12 @@ fun OrbitXFeed(
             items(postsList) { post ->
                 val user = userProfileData.find { it.userId == post.owneruid }
 
+
                 OrbitXPost(
                     profileImageUrl = user?.profilepictureurl ?: "",
                     username = user?.username ?: "Unknown User",
                     location = "Location",
+                    owneruserid = post.owneruid,
                     imageUrl = post.imageUrl,
                     text = post.text,
                     initialIsLiked = false,
@@ -323,6 +325,7 @@ fun OrbitXPost(
     profileImageUrl: String,
     username: String,
     location: String,
+    owneruserid: String,
     imageUrl: String,
     text: String,
     initialIsLiked: Boolean,
@@ -331,7 +334,8 @@ fun OrbitXPost(
     timestamp: Long,
     onComment: (String) -> Unit,
     onShare: () -> Unit,
-    onLikeChange: (Boolean) -> Unit
+    onLikeChange: (Boolean) -> Unit,
+    viewModel: AuthViewModel= viewModel(),
 ) {
     var isLiked by remember { mutableStateOf(initialIsLiked) }
     var likeCounter by remember { mutableStateOf(likesCount) }
@@ -341,6 +345,14 @@ fun OrbitXPost(
         val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
         dateFormat.format(Date(timestamp))
     }
+    var usrname by remember { mutableStateOf("") }
+    var profilepicurl by remember { mutableStateOf("") }
+
+    viewModel.fetchusername(owneruserid){it-> usrname=it}
+    viewModel.fetchProfileurl(owneruserid){it-> profilepicurl=it}
+
+
+
 
     Column(
         modifier = Modifier
@@ -352,7 +364,7 @@ fun OrbitXPost(
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(profileImageUrl)
+                    .data(profilepicurl)
                     .crossfade(true)
                     .build(),
                 placeholder = painterResource(R.drawable.avataricon),
@@ -367,7 +379,7 @@ fun OrbitXPost(
 
             Column {
                 Text(
-                    text = username,
+                    text = usrname,
                     fontWeight = FontWeight.Bold,
                     fontSize = 16.sp,
                     color = Color.Black
