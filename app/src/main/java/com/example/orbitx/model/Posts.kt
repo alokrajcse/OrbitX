@@ -6,7 +6,8 @@ data class Posts(
     val text: String = "",
     val likesCount: Int = 0,
     val commentsCount: Int = 0,
-    val timestamp: Long = 0L
+    val timestamp: Long = 0L,
+    var postId: String = ""
 )
 
 

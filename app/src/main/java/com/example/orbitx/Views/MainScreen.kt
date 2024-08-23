@@ -2,6 +2,7 @@ package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -286,6 +287,7 @@ fun OrbitXFeed(
     onRefresh: () -> Unit
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
+    val context= LocalContext.current
 
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing),
@@ -309,6 +311,8 @@ fun OrbitXFeed(
                     username = user?.username ?: "Unknown User",
                     location = "Location",
                     owneruserid = post.owneruid,
+                    postuid = post.postId,
+
                     imageUrl = post.imageUrl,
                     text = post.text,
                     initialIsLiked = false,
@@ -318,7 +322,15 @@ fun OrbitXFeed(
                     onComment = { commentText ->
                         println("Comment posted: $commentText")
                     },
-                    onShare = { /* Handle share action */ },
+                    onShare = {
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, "Checkout this post on OrbitX: https://orbitxsocial.netlify.app/posts/${post.postId}")
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        context.startActivity(shareIntent)
+                    },
                     onLikeChange = { isLiked ->
 
                     }
@@ -332,6 +344,7 @@ fun OrbitXFeed(
 fun OrbitXPost(
     profileImageUrl: String,
     username: String,
+    postuid: String,
     location: String,
     owneruserid: String,
     imageUrl: String,
@@ -358,6 +371,7 @@ fun OrbitXPost(
 
     viewModel.fetchusername(owneruserid){it-> usrname=it}
     viewModel.fetchProfileurl(owneruserid){it-> profilepicurl=it}
+
 
 
 
@@ -443,7 +457,9 @@ fun OrbitXPost(
                 )
             }
 
-            IconButton(onClick = onShare) {
+            IconButton(onClick = {
+                onShare()
+            }) {
                 Icon(
                     imageVector = Icons.Filled.Share,
                     contentDescription = "Share",

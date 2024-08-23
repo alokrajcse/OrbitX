@@ -64,13 +64,18 @@ class AuthViewModel : ViewModel() {
         db.collection("Posts")
             .get()
             .addOnSuccessListener { snapshot ->
-                val postsList = snapshot.documents.mapNotNull { it.toObject<Posts>() }
+                val postsList = snapshot.documents.mapNotNull { document ->
+                    val post = document.toObject<Posts>()
+                    post?.postId = document.id
+                    post
+                }
                 onResult(postsList)
             }
             .addOnFailureListener { e ->
                 Log.w("AuthViewModel", "Error fetching posts", e)
             }
     }
+
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     fun signIn(email: String, password: String, onNavigateToHome: () -> Unit) {
         auth.signInWithEmailAndPassword(email, password)

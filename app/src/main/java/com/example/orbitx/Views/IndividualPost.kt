@@ -1,6 +1,7 @@
 package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
+import android.content.Intent
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
@@ -24,6 +25,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.compose.rememberImagePainter
@@ -31,6 +33,7 @@ import coil.request.ImageRequest
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchusername
 import com.example.orbitx.R
+import com.example.orbitx.ViewModel.AuthViewModel
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.*
@@ -38,7 +41,8 @@ import java.util.*
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-fun IndividualPost(data: String,navController: NavController) {
+fun IndividualPost(data: String,navController: NavController, authViewModel: AuthViewModel= viewModel()) {
+    val context= LocalContext.current
     val db = FirebaseFirestore.getInstance()
     var title by remember { mutableStateOf("") }
     var owneruserid by remember { mutableStateOf("") }
@@ -57,10 +61,10 @@ fun IndividualPost(data: String,navController: NavController) {
             owneruserid = it.get("owneruid").toString() ?: ""
             imageUrl = it.get("imageUrl").toString() ?: ""
 
-            fetchusername(owneruserid) { fetchedUsername ->
+            authViewModel.fetchusername(owneruserid) { fetchedUsername ->
                 username = fetchedUsername
             }
-            fetchProfileurl(owneruserid) { fetchedProfilePicUrl ->
+            authViewModel.fetchProfileurl(owneruserid) { fetchedProfilePicUrl ->
                 profilepicurl = fetchedProfilePicUrl
             }
         }
@@ -69,7 +73,7 @@ fun IndividualPost(data: String,navController: NavController) {
 
 
     Scaffold(topBar = {
-        TopAppBar(title = { Text(text = "Profile") }, colors = TopAppBarDefaults.topAppBarColors(
+        TopAppBar(title = { Text(text = "Posts") }, colors = TopAppBarDefaults.topAppBarColors(
             colorResource(id = R.color.orange)
         ), navigationIcon = { IconButton(onClick = { navController.navigateUp() }) {
             Icon(
@@ -166,7 +170,15 @@ fun IndividualPost(data: String,navController: NavController) {
                     )
                 }
 
-                IconButton(onClick = { }) {
+                IconButton(onClick = {
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, "Checkout this post on OrbitX: https://orbitxsocial.netlify.app/posts/${data}")
+                        type = "text/plain"
+                    }
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                }) {
                     Icon(
                         imageVector = Icons.Filled.Share,
                         contentDescription = "Share",

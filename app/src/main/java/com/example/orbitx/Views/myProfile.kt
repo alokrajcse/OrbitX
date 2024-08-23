@@ -176,7 +176,7 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                             onClick = {
                                 val sendIntent: Intent = Intent().apply {
                                     action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_TEXT, "This is my profile on OrbitX: https://orbitxsocial.netlify.app/profile/$userId")
+                                    putExtra(Intent.EXTRA_TEXT, "Checkout my profile on OrbitX: https://orbitxsocial.netlify.app/profile/$userId")
                                     type = "text/plain"
                                 }
                                 val shareIntent = Intent.createChooser(sendIntent, null)
