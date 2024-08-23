@@ -16,6 +16,7 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.Send
 import androidx.compose.material.icons.filled.AddCircle
 import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Image
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
@@ -183,7 +184,7 @@ fun ChatRoom(otherUserId: String, currentUserId: String, navController: NavContr
                 }
 
                 override fun onCancelled(error: DatabaseError) {
-                    // Handle error
+
                 }
             })
         }
@@ -279,7 +280,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
 
     val media= rememberLauncherForActivityResult(contract = ActivityResultContracts.PickVisualMedia(), onResult = {
             uri-> if (uri!=null){
-        //text1=uri.toString()
+
                 sending=true
 
         var storageref= com.google.firebase.Firebase.storage.getReference("practice").child("part3")
@@ -291,7 +292,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
 
                 imageurl=it.toString()
                 val sdf = SimpleDateFormat("HH:mm")
-                val currentTime = sdf.format(Date())
+                val currentTime = System.currentTimeMillis().toString()
 
 
                 val messageData = MessageCard(
@@ -346,14 +347,14 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
                 )
             )
             IconButton(onClick = { media.launch(PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)) }) {
-                Icon(imageVector = Icons.Default.AddCircle, contentDescription = "", tint = Color.White)
+                Icon(imageVector = Icons.Default.Image, contentDescription = "", tint = Color.White)
             }
             IconButton(onClick = {
                 if (imageUri != null) {
 
                     textboxhint="Tap send button to send image"
                     val sdf = SimpleDateFormat("HH:mm")
-                    val currentTime = sdf.format(Date())
+                    val currentTime = System.currentTimeMillis().toString()
                     val storagePath = "chat_images/${chatRoomId}/${UUID.randomUUID()}.jpg"
                     val imageRef = storageRef.child(storagePath)
 
@@ -383,7 +384,7 @@ fun ChatBox(currentUserId: String, otherUserId: String) {
                     }
                 } else if (message.isNotEmpty()) {
                     val sdf = SimpleDateFormat("HH:mm")
-                    val currentTime = sdf.format(Date())
+                    val currentTime = System.currentTimeMillis().toString()
                     val messageData = MessageCard(message, currentUserId, currentTime, "")
                     db.child("LastTime").child(chatRoomId).setValue(currentTime)
                     db.child("ChatRooms").child(chatRoomId).push().setValue(messageData)

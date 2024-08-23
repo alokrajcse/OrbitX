@@ -4,7 +4,7 @@ import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
-import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
@@ -29,40 +29,34 @@ import androidx.navigation.NavHostController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.orbitx.ChatRepository.ChatViewModel
-import com.example.orbitx.ChatRepository.User
-import com.example.orbitx.ChatRepository.fetchProfileurl
-import com.example.orbitx.ChatRepository.getChatRoomId
-
 import com.example.orbitx.R
-import com.google.firebase.auth.ktx.auth
-import com.google.firebase.database.ktx.database
-import com.google.firebase.ktx.Firebase
+import java.text.SimpleDateFormat
+import java.util.Date
+import java.util.Locale
 
 @Composable
 fun ChatHomeScreen(navController: NavHostController) {
     Box(modifier = Modifier.fillMaxSize()) {
-
         Image(
             painter = painterResource(id = R.drawable.orbit),
             contentDescription = null,
             contentScale = ContentScale.Crop,
             modifier = Modifier.fillMaxSize()
         )
-
         Column(modifier = Modifier.fillMaxSize()) {
             FirebaseUI(navController)
         }
     }
 }
-
 @Composable
 fun FirebaseUI(navController: NavHostController, viewModel: ChatViewModel = viewModel()) {
-    val users by viewModel.users.observeAsState(emptyList())
+    val chatcardlist by viewModel.chatcardlist.observeAsState(emptyList())
 
     Column(
         modifier = Modifier.fillMaxSize(),
         horizontalAlignment = Alignment.Start
     ) {
+
         Row(
             modifier = Modifier
                 .fillMaxWidth()
@@ -82,37 +76,21 @@ fun FirebaseUI(navController: NavHostController, viewModel: ChatViewModel = view
             )
         }
 
-        Spacer(modifier = Modifier.height(0.dp))
-
+        Spacer(modifier = Modifier.height(8.dp))
 
 
         LazyColumn {
-
-            itemsIndexed(users) { index, user ->
-                ChatItem(index = index, user = user, navController = navController, viewModel = viewModel)
+            items(chatcardlist ?: emptyList()) { chatCard ->
+                ChatCardItem(chatCard = chatCard, navController = navController)
             }
         }
-
-
-
     }
 }
 
 @Composable
-fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel: ChatViewModel) {
-    val roomId = getChatRoomId(user.userId, Firebase.auth.currentUser?.uid ?: "")
-    val lastTime by viewModel.getLastTime(roomId).observeAsState("")
-    var profilePictureUrl by remember { mutableStateOf("") }
-    fetchProfileurl(user.userId) { url ->profilePictureUrl=url}
-    var onlinestatus by remember { mutableStateOf(false) }
-
-    Firebase.database.getReference("users").child(user.userId).child("online")
-        .get().addOnSuccessListener {
-            onlinestatus = it.getValue(Boolean::class.java) ?: false
-        }
-
+fun ChatCardItem(chatCard: ChatCard, navController: NavHostController) {
     Card(
-        onClick = { navController.navigate("MainChatScreen/${user.userId}") },
+        onClick = { navController.navigate("MainChatScreen/${chatCard.userId}") },
         modifier = Modifier
             .fillMaxWidth()
             .padding(2.dp),
@@ -128,7 +106,7 @@ fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel
         ) {
             AsyncImage(
                 model = ImageRequest.Builder(LocalContext.current)
-                    .data(profilePictureUrl)
+                    .data(chatCard.profilePictureUrl)
                     .crossfade(true)
                     .build(),
                 placeholder = painterResource(R.drawable.avataricon),
@@ -140,33 +118,43 @@ fun ChatItem(index: Int, user: User, navController: NavHostController, viewModel
                     .width(52.dp)
             )
 
-            Box(modifier = Modifier.weight(1f) ){
-               Column(modifier = Modifier.padding(start = 10.dp)) {
-                   Text(
-                       text = user.username,
-                       fontSize = 22.sp,
-                       fontStyle = FontStyle.Normal,
-                       fontWeight = FontWeight.Bold,
-                       textAlign = TextAlign.Start,
-                       modifier = Modifier
-                           .padding(2.dp)
-
-                   )
-                   Text(
-                       text = if (onlinestatus) "Online" else "Offline",
-                       fontSize = 16.sp,
-                       fontStyle = FontStyle.Normal,
-                       fontWeight = FontWeight.Bold,
-                       textAlign = TextAlign.Start,
-                       modifier = Modifier
-                           .padding(2.dp),
-                       color = if (onlinestatus) Color.Magenta else Color.Gray
-
-                   )
-               }
+            Box(modifier = Modifier.weight(1f)) {
+                Column(modifier = Modifier.padding(start = 10.dp)) {
+                    Text(
+                        text = chatCard.username,
+                        fontSize = 22.sp,
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.padding(2.dp)
+                    )
+                    Text(
+                        text = if (chatCard.onlinestatus) "Online" else "Offline",
+                        fontSize = 16.sp,
+                        fontStyle = FontStyle.Normal,
+                        fontWeight = FontWeight.Bold,
+                        textAlign = TextAlign.Start,
+                        modifier = Modifier.padding(2.dp),
+                        color = if (chatCard.onlinestatus) Color.Magenta else Color.Gray
+                    )
+                }
             }
 
-            Text(text = lastTime, textAlign = TextAlign.End)
+            val currentTimeMillis = chatCard.lastTime
+            val sdf = SimpleDateFormat("HH:mm", Locale.getDefault())
+            val date = Date(currentTimeMillis)
+            val formattedTime = sdf.format(date)
+            Text(
+                text = formattedTime,
+                textAlign = TextAlign.End
+            )
         }
     }
 }
+data class ChatCard(
+    val userId: String = "",
+    val profilePictureUrl: String = "",
+    val username: String = "",
+    val onlinestatus: Boolean = false,
+    val lastTime: Long = 0L
+)

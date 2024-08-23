@@ -100,4 +100,7 @@ dependencies {
     implementation ("com.google.accompanist:accompanist-swiperefresh:0.30.1")
 
 
+    implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
+
+
 }
