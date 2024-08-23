@@ -36,6 +36,8 @@ import com.example.orbitx.Navigation.AppNavigation
 import com.example.orbitx.ui.theme.OrbitXTheme
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.FirebaseDatabase
+import android.content.Intent
+import android.net.Uri
 
 class MainActivity : ComponentActivity() {
     private val userId: String? = FirebaseAuth.getInstance().currentUser?.uid
@@ -69,8 +71,11 @@ class MainActivity : ComponentActivity() {
         setContent {
             OrbitXTheme {
                 AppNavigation(activity = this, intent = intent)
+
+
             }
         }
+
     }
 
 

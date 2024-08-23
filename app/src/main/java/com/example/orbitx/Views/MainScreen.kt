@@ -267,6 +267,14 @@ fun MainScreen(activity: Activity) {
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 MainChatScreen(navController, data)
             }
+            composable("otheruserprofile/{data}", arguments = listOf(navArgument("data") { type = NavType.StringType })) { backStackEntry ->
+                val data = backStackEntry.arguments?.getString("data") ?: ""
+                otherUserProfileSection(data=data,userProfile = UserProfile(
+                    profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
+
+                    ), navController = navController
+                )
+            }
         }
     }
 }
@@ -312,7 +320,7 @@ fun OrbitXFeed(
                     },
                     onShare = { /* Handle share action */ },
                     onLikeChange = { isLiked ->
-                        // Handle like change
+
                     }
                 )
             }
