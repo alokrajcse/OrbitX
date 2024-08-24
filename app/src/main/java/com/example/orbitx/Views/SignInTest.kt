@@ -50,12 +50,11 @@ fun SignInTestScreen() {
                         .padding(horizontal = 16.dp)
                         .align(Alignment.Center)
                 ) {
-                    // Centered Card with light shade of background
                     Card(
                         modifier = Modifier
                             .wrapContentSize()
-                            .padding(20.dp)// Adjusts the size of the card to the content
-                            .align(Alignment.Center), // Centers the card
+                            .padding(20.dp)
+                            .align(Alignment.Center),
                         shape = RoundedCornerShape(2.dp),
                         colors = CardDefaults.cardColors(containerColor = cardBackgroundColor)
                     ) {

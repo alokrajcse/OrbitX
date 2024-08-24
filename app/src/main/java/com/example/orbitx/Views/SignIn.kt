@@ -133,7 +133,7 @@ fun SignInScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Still without account?",
+                        text = "Don't have an account?",
                         fontSize = 14.sp,
                         fontFamily = urbanistLight
                     )
