@@ -77,7 +77,7 @@ fun sendTopicNotification2(context: Context, topic: String, title: String, messa
 
 
 fun getAccessToken(context: Context): String {
-    val inputStream: InputStream = context.assets.open("orbitx-32de1-firebase-adminsdk-ld0ls-884fca11c0.json")
+    val inputStream: InputStream = context.assets.open("orbitx-32de1-firebase-adminsdk-ld0ls-b34fe7b5fd.json")
     val credentials = GoogleCredentials
         .fromStream(inputStream)
         .createScoped(listOf("https://www.googleapis.com/auth/cloud-platform"))
