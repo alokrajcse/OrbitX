@@ -9,7 +9,8 @@ data class Post(
     val commentsCount: Int,
     val comments: List<Comment>,
     val likes: List<Like>,
-    val location: Location? = null
+    val location: String ,
+    val hashtag: String
 )
 
 data class Comment(

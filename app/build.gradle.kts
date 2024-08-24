@@ -48,6 +48,9 @@ android {
             excludes += "/META-INF/DEPENDENCIES"
         }
     }
+    packagingOptions {
+        resources.excludes.add("META-INF/INDEX.LIST")
+    }
 }
 
 dependencies {
@@ -64,6 +67,7 @@ dependencies {
     implementation(libs.androidx.runtime.livedata)
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
+    implementation(libs.androidx.appcompat)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -76,8 +80,8 @@ dependencies {
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
     implementation("com.google.firebase:firebase-firestore")
-    implementation("androidx.navigation:navigation-compose:2.6.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.5.1")
+    implementation("androidx.navigation:navigation-compose:2.7.7")
+    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("io.coil-kt:coil:2.7.0")
     implementation("io.coil-kt:coil-compose:2.7.0")
@@ -90,17 +94,18 @@ dependencies {
     implementation ("androidx.compose.ui:ui:1.6.8")
     implementation ("androidx.compose.material:material:1.6.8")
     implementation ("androidx.compose.ui:ui-tooling-preview:1.6.8")
-    implementation("com.google.accompanist:accompanist-swiperefresh:0.30.1")
-    implementation ("androidx.compose.material3:material3:1.2.1")
+    implementation("com.google.accompanist:accompanist-swiperefresh:0.34.0")
+    implementation (libs.androidx.compose.material3.material3)
     implementation ("com.squareup.retrofit2:retrofit:2.11.0")
     implementation ("com.squareup.retrofit2:converter-gson:2.11.0")
-    implementation ("com.google.auth:google-auth-library-oauth2-http:1.1.0")
+    implementation ("com.google.auth:google-auth-library-oauth2-http:1.24.1")
     implementation ("com.github.bumptech.glide:compose:1.0.0-beta01")
-    implementation ("androidx.core:core-splashscreen:1.0.0")
-    implementation ("com.google.accompanist:accompanist-swiperefresh:0.30.1")
-
-
+    implementation ("androidx.core:core-splashscreen:1.0.1")
+    implementation ("com.google.accompanist:accompanist-swiperefresh:0.34.0")
+    implementation ("androidx.compose.ui:ui-text-google-fonts:1.7.0-beta07")
+    implementation ("com.google.android.gms:play-services-location:21.3.0")
+    implementation ("com.google.android.libraries.places:places:3.5.0")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
-
+    implementation ("com.android.volley:volley:1.2.1")
 
 }
