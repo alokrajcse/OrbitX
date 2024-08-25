@@ -31,6 +31,7 @@ class CreatePostViewModel : ViewModel() {
     val imageUrl: StateFlow<String> = _imageUrl
 
 
+
     fun onTextChanged(newText: String) {
         _text.value = newText
     }
@@ -39,7 +40,7 @@ class CreatePostViewModel : ViewModel() {
         _imageUri.value = uri
     }
 
-    fun createPost(context: Context, navController: NavController) {
+    fun createPost(context: Context, navController: NavController, location: String, hashtag: String) {
         _isPostCreated.value = true
         if (text.value.isBlank() || imageUri.value == null) {
             Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
@@ -57,7 +58,8 @@ class CreatePostViewModel : ViewModel() {
                 commentsCount = 0, // Initialize comments count to 0
                 comments = emptyList(), // Initialize comments list to empty
                 likes = emptyList(), // Initialize likes list to empty
-                location = null // Initialize location to null
+                location = location, // Set the location
+                hashtag = hashtag // Set the hashtag
             )
             repository.createPost(post)
                 .addOnSuccessListener {
@@ -89,4 +91,5 @@ class CreatePostViewModel : ViewModel() {
                 Log.e("UploadError", "Failed to upload image", it)
             }
     }
+
 }

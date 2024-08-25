@@ -1,10 +1,17 @@
 package com.example.orbitx.Views
 
+import android.Manifest
+import android.app.Activity
+import android.content.Context
+import android.content.Intent
+import android.content.pm.PackageManager
 import android.net.Uri
+import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -68,14 +75,30 @@ import androidx.navigation.NavController
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.font.FontFamily
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchusername
 import com.google.firebase.auth.auth
+//import androidx.compose.ui.text.googlefonts.GoogleFont
+//import androidx.compose.ui.text.googlefonts.Font
+import androidx.core.app.ActivityCompat
+import androidx.core.content.ContextCompat
+import com.example.orbitx.model.Location
+import com.example.orbitx.ui.theme.fontFamily1
+import com.example.orbitx.ui.theme.provider
+import com.google.android.gms.common.api.Status
+import com.google.android.gms.location.LocationServices
+import com.google.android.libraries.places.api.Places
+import com.google.android.libraries.places.api.model.Place
+import com.google.android.libraries.places.api.net.PlacesClient
+import com.google.android.libraries.places.widget.AutocompleteSupportFragment
+import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
 @Composable
 fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel = viewModel(), modifier: Modifier,) {
+
     val text by viewModel.text.collectAsState()
     var locationText by remember { mutableStateOf("") }
     var HashtagText by remember { mutableStateOf("") }
@@ -107,8 +130,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     fetchProfileurl(cuid){it->profilepicurl=it}
     fetchusername(cuid){it->username=it}
 
-    var focusedContainerColor by remember { mutableStateOf(Color(237, 222, 221)) }
-
+    var focusedContainerColor by remember { mutableStateOf(Color(226, 229, 234)) }
     LaunchedEffect(Unit) {
         launch {
             try {
@@ -167,7 +189,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         },
                         onHashtagTextChanged = { newHashtagText ->
                             HashtagText = newHashtagText
-                            viewModel.onTextChanged("$text $locationText")
+                            viewModel.onTextChanged("$text $HashtagText")
                         }
                     )
                 }
@@ -182,7 +204,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                 Column() {
                     TopBar(
                         onBackPressed = { navController.navigateUp() },
-                        onPostClicked = { viewModel.createPost(context,navController) }
+                        onPostClicked = { viewModel.createPost(context,navController, locationText, HashtagText) }
                     )
                     Divider(
                         color = Color.LightGray, // Set the color of the divider
@@ -222,55 +244,89 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                 .build(),
                             contentDescription = null,
                             modifier = Modifier
-                                .size(40.dp)
+                                .size(53.dp)
                                 .clip(CircleShape)
                         )
                         Column(
                             Modifier
                                 .weight(1f)
-                                .padding(start = 8.dp)
+                                .padding(start = 10.dp)
                         ) {
                             Text(
                                 text=username,
-                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.Medium),
+                                style = MaterialTheme.typography.titleMedium.copy(fontWeight = androidx.compose.ui.text.font.FontWeight.ExtraBold,
+                                    fontSize = 23.sp),
                                 color = Color.Black
                             )
-                            val today = remember {
-                                Date()
-                            }
-                            Text(
-                                post.timestamp?.let { dateLabel(timestamp = it, today = today) }
-                                    ?: "",
-                                color = Color.DarkGray
-
-                            )
-                        }
-                        Box(
-                            modifier = Modifier
-                                .height(30.dp)
-                                .width(150.dp),
-                            contentAlignment = Alignment.Center
-                        ) {
-                            Row {
-                                IconButton(onClick = { }) {
-                                    Icon(
-                                        imageVector = Icons.Filled.EditLocation,
-                                        contentDescription = "Edit Location",
-                                        tint = Color.Red, // Change color here
-                                        modifier = Modifier.size(25.dp) // Change size here
-                                    )
-                                }
-                                Text(
-                                    locationText,
+                            Row(
+                                Modifier
+                                    .padding(vertical = 8.dp)) {
+                                Box(
                                     modifier = Modifier
-                                        .weight(0.5f)
-                                        .align(Alignment.CenterVertically),
-                                    style = TextStyle(
-                                        fontSize = 12.sp, // Adjust this value to change the font size
-                                        color = Color.Red
-                                    ),
-                                )
+                                        .height(25.dp)
+                                        .width(110.dp)
+                                        .background(
+                                            Color(226, 229, 234),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
+
+                                ) {
+                                    Row {val today = remember {
+                                        Date()
+                                    }
+                                        IconButton(onClick = { }) {
+                                            Icon(
+                                                imageVector = Icons.Filled.CalendarToday,
+                                                contentDescription = "Edit Location",
+                                                tint = (colorResource(id = R.color.orange)), // Change color here
+                                                modifier = Modifier.size(25.dp) // Change size here
+                                            )
+                                        }
+                                        Text(
+                                            post.timestamp?.let {
+                                                dateLabel(
+                                                    timestamp = it,
+                                                    today = today
+                                                )
+                                            }
+                                                ?: "",
+                                            color = Color.DarkGray
+
+                                        )
+                                    }
+                                }
+                                Box(
+                                        modifier = Modifier
+                                            .height(25.dp)
+                                            .width(200.dp)
+                                            .padding(horizontal = 10.dp)
+                                            .background(
+                                                Color(226, 229, 234),
+                                                shape = RoundedCornerShape(10.dp)
+                                            ),
+                                contentAlignment = Alignment.Center
+
+                                ) {
+                                    Row {
+                                        IconButton(onClick = { }) {
+                                            Icon(
+                                                imageVector = Icons.Filled.EditLocation,
+                                                contentDescription = "Edit Location",
+                                                tint = (colorResource(id = R.color.orange)), // Change color here
+                                                modifier = Modifier.size(25.dp) // Change size here
+                                            )
+                                        }
+                                        Text(
+                                            if (locationText.isEmpty()) "Location" else locationText,
+                                            modifier = Modifier
+                                                .weight(0.5f)
+                                                .align(Alignment.CenterVertically),
+                                        )
+                                    }
                             }
+                            }
+
                         }
 
                         IconButton(onClick = { coroutineScope.launch { _sheetState.show() } }) {
@@ -281,8 +337,37 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                             )
                         }
                     }
+                    Box(
+                        modifier = Modifier
+                            .height(25.dp)
+                            .width(300.dp)
+                            .padding(horizontal = 70.dp)
+                            .background(Color(226, 229, 234), shape = RoundedCornerShape(10.dp)),
+                        contentAlignment = Alignment.Center
+                    ) {
+                        Row {
+                            IconButton(onClick = { }) {
+                                Icon(
+                                    imageVector = Icons.Filled.Hail,
+                                    contentDescription = "Edit Location",
+                                    tint = (colorResource(id = R.color.orange)), // Change color here
+                                    modifier = Modifier.size(25.dp) // Change size here
+                                )
+                            }
+                            Text(
+                                if (HashtagText.isEmpty()) "Hashtag" else HashtagText,
+                                modifier = Modifier
+                                    .weight(0.5f)
+                                    .align(Alignment.CenterVertically),
+                            )
+                        }
+                    }
                     Spacer(Modifier.height(8.dp))
+                    Divider(
+                        color = Color.LightGray, // Set the color of the divider
+                        thickness = 1.dp,   // Set the thickness of the divider
 
+                    )
                     TextField(
                         value = textState.value,
                         onValueChange = {
@@ -291,8 +376,9 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         },
                         placeholder = {
                             Text(
-                                text = "What's on your mind?",
-                                style = TextStyle(fontSize = 25.sp),
+                                text = "Share Your Thoughts !",
+                                style = TextStyle(fontSize = 25.sp,
+                                    fontFamily = fontFamily1),
                                 color = Color.Gray
                             )
                         },
@@ -307,7 +393,6 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                             .background(Color.Yellow)
                             .fillMaxWidth()
                             .height(300.dp),
-                        visualTransformation = HighlightLocationVisualTransformation(HashtagText)
                     )
 
                 }
@@ -315,27 +400,6 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
         }
     }
 }
-
-
-class HighlightLocationVisualTransformation(private val  HashtagText: String) : VisualTransformation {
-    override fun filter(text: AnnotatedString): TransformedText {
-        val annotatedString = buildAnnotatedString {
-            val originalText = text.text
-            val hashtagIndex = originalText.indexOf(HashtagText)
-
-            if (hashtagIndex != -1) {
-                withStyle(style = SpanStyle(color = Color.Blue)) {
-                    append(originalText.substring(hashtagIndex, hashtagIndex + HashtagText.length))
-                }
-                append(originalText.substring(hashtagIndex+ HashtagText.length))
-            } else {
-                append(originalText)
-            }
-        }
-        return TransformedText(annotatedString, offsetMapping = OffsetMapping.Identity)
-    }
-}
-
 
 
 
@@ -351,160 +415,82 @@ fun PostOptionsBottomSheet(
     onHashtagTextChanged: (String) -> Unit
 ) {
     Column(modifier = Modifier.padding(16.dp)) {
-        Spacer(Modifier.height(1.dp))
-        ImagePicker(
-            imageUri = imageUri,
-            onImageSelected = { imagePickerLauncher.launch("image/*") }
-        )
-        Spacer(Modifier.height(1.dp))
         Box(
             modifier = Modifier
                 .fillMaxWidth()
-                .height(50.dp),
+                .height(40.dp),
             contentAlignment = Alignment.Center
-        ) {
-            var showColorPicker by remember { mutableStateOf(false) }
-            ExtendedFloatingActionButton(
-                onClick = { showColorPicker = true },
-                icon = {
-                    Box(Modifier.size(24.dp)) {
-                        val myImage: Painter = painterResource(id = R.drawable.color)
-                        Image(painter = myImage, contentDescription = "Edit")
-                    }
-                },
-                text = {
-                    Text(
-                        text = "Background Colour", style = TextStyle(
-                            fontSize = 20.sp, // Change font size here
-                            color = Color.Black
-                        )
-                    )
-                },
-                shape = RoundedCornerShape(0.dp),
-                modifier = Modifier
-                    .fillMaxSize(),
-                containerColor = Color.White,
+        ){
+            Icon(
+                imageVector = Icons.Filled.ArrowDropUp,
+                contentDescription = "Upward Arrow",
+                modifier = Modifier.size(40.dp)
             )
-
-            // Show color picker dialog
-            if (showColorPicker) {
-                ColorPickerDialog(
-                    onColorSelected = { color ->
-                        onColorSelected(color)
-                        showColorPicker = false
+        }
+        Spacer(Modifier.height(1.dp))
+        Row {
+            ImagePicker(
+                imageUri = imageUri,
+                onImageSelected = { imagePickerLauncher.launch("image/*") }
+            )
+            Spacer(Modifier.width(10.dp))
+            Box(
+                modifier = Modifier
+                    .width(185.dp)
+                    .height(125.dp)
+                    .background(Color(226, 229, 234),),
+                contentAlignment = Alignment.Center
+            ) {
+                var showColorPicker by remember { mutableStateOf(false) }
+                ExtendedFloatingActionButton(
+                    onClick = { showColorPicker = true },
+                    icon = {
+                        Box(Modifier.size(24.dp)) {
+                            val myImage: Painter = painterResource(id = R.drawable.color)
+                            Image(painter = myImage, contentDescription = "Edit")
+                        }
                     },
-                    onDismissRequest = { showColorPicker = false }
+                    text = {
+                        Text(
+                            text = "Background Colour", style = TextStyle(
+                                fontSize = 20.sp, // Change font size here
+                                color = Color.Black
+                            )
+                        )
+                    },
+                    shape = RoundedCornerShape(0.dp),
+                    modifier = Modifier
+                        .fillMaxSize(),
+                    containerColor = Color(226, 229, 234)
                 )
 
+                // Show color picker dialog
+                if (showColorPicker) {
+                    ColorPickerDialog(
+                        onColorSelected = { color ->
+                            onColorSelected(color)
+                            showColorPicker = false
+                        },
+                        onDismissRequest = { showColorPicker = false }
+                    )
+
+                }
             }
         }
-        Spacer(Modifier.height(1.dp))
-        Location{ location ->
-            onLocationTextChanged(location)}
-        Spacer(Modifier.height(1.dp))
-        Spacer(Modifier.height(1.dp))
-        Hashtag(textState = textState) { hashtag ->
-            onHashtagTextChanged(hashtag)
+
+        Spacer(Modifier.height(10.dp))
+        Row {
+            Location{ location ->
+                onLocationTextChanged(location)}
+            Spacer(Modifier.width(10.dp))
+            Hashtag(textState = textState) { hashtag ->
+                onHashtagTextChanged(hashtag)
+            }
         }
-        Spacer(Modifier.height(1.dp))
-        Activity()
-        Spacer(Modifier.height(1.dp))
-        Texts()
-        Spacer(Modifier.height(1.dp))
-        Link()
+
     }
 }
 
-
-@Composable
-fun Link() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        ExtendedFloatingActionButton(
-            onClick = { },
-            icon = {Box(Modifier.size(24.dp)) {
-                val myImage: Painter = painterResource(id = R.drawable.link)
-                Image(painter = myImage, contentDescription = "Edit")
-            }},
-            text = {
-                Text(
-                    text = "Link", style = TextStyle(
-                        fontSize = 20.sp,// Change font size here
-                        color = Color.Black
-                    )
-                )
-            },
-            shape = RoundedCornerShape(0.dp),
-            modifier = Modifier
-                .fillMaxSize(),
-            containerColor = Color.White,
-        )
-    }
-}
-
-@Composable
-fun Texts() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        ExtendedFloatingActionButton(
-            onClick = { },
-            icon = {Box(Modifier.size(24.dp)){
-                val myImage: Painter = painterResource(id = R.drawable.text)
-                Image(painter = myImage, contentDescription = "Edit")
-            }},
-            text = {
-                Text(
-                    text = "Text", style = TextStyle(
-                        fontSize = 20.sp,// Change font size here
-                        color = Color.Black
-                    )
-                )
-            },
-            shape = RoundedCornerShape(0.dp),
-            modifier = Modifier
-                .fillMaxSize(),
-            containerColor = Color.White,
-        )
-    }
-}
-
-@Composable
-fun Activity() {
-    Box(
-        modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
-        contentAlignment = Alignment.Center
-    ) {
-        ExtendedFloatingActionButton(
-            onClick = { },
-            icon = {Box(Modifier.size(24.dp)){
-                val myImage: Painter = painterResource(id = R.drawable.activity)
-                Image(painter = myImage, contentDescription = "Edit")
-            }},
-            text = {
-                Text(
-                    text = "Activity", style = TextStyle(
-                        fontSize = 20.sp,// Change font size here
-                        color = Color.Black
-                    )
-                )
-            },
-            shape = RoundedCornerShape(0.dp),
-            modifier = Modifier
-                .fillMaxSize(),
-            containerColor = Color.White,
-        )
-    }
-}
 
 @Composable fun Hashtag(textState: MutableState<TextFieldValue>, onHashtagEntered: (String) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
@@ -512,8 +498,9 @@ fun Activity() {
 
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
+            .width(185.dp)
+            .height(125.dp)
+            .background(Color(226, 229, 234),),
         contentAlignment = Alignment.Center
     ) {
         ExtendedFloatingActionButton(
@@ -536,7 +523,7 @@ fun Activity() {
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier
                 .fillMaxSize(),
-            containerColor = Color.White
+            containerColor = Color(226, 229, 234)
         )
     }
 
@@ -563,16 +550,17 @@ fun Activity() {
         )
     }
 }
-
 @Composable
 fun Location(onLocationEntered: (String) -> Unit) {
     var showDialog by remember { mutableStateOf(false) }
     var locationText by remember { mutableStateOf("") }
+    val context = LocalContext.current
 
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
+            .width(185.dp)
+            .height(125.dp)
+            .background(Color(226, 229, 234),),
         contentAlignment = Alignment.Center
     ) {
         ExtendedFloatingActionButton(
@@ -595,7 +583,7 @@ fun Location(onLocationEntered: (String) -> Unit) {
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier
                 .fillMaxSize(),
-            containerColor = Color.White
+            containerColor = Color(226, 229, 234)
         )
     }
 
@@ -604,21 +592,73 @@ fun Location(onLocationEntered: (String) -> Unit) {
             onDismissRequest = { showDialog = false },
             title = { Text("Enter Location") },
             text = {
-                TextField(
-                    value = locationText,
-                    onValueChange = { locationText = it },
-                    label = { Text("Location") }
-                )
+                Column {
+                    TextField(
+                        value = locationText,
+                        onValueChange = { locationText = it },
+                        label = { Text("Location") }
+                    )
+                    Row(
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .padding(top = 8.dp),
+                        horizontalArrangement = Arrangement.SpaceBetween
+                    ) {
+                        TextButton(onClick = {
+                            onLocationEntered(locationText)
+                            showDialog = false
+                        }) {
+                            Text("Confirm")
+                        }
+                        Button(onClick = {
+                            // Use the Google Places API to search for locations
+                            val intent = Intent(context, SearchLocationActivity::class.java)
+                            context.startActivity(intent)
+                        }) {
+                            Text("Search Location")
+                        }
+                    }
+                }
             },
             confirmButton = {
-                Button(onClick = {
-                    onLocationEntered(locationText)
-                    showDialog = false
-                }) {
-                    Text("Confirm")
+                TextButton(onClick = { showDialog = false }) {
+                    Text("Dismiss")
                 }
             }
         )
+    }
+}
+class SearchLocationActivity : AppCompatActivity() {
+    private lateinit var placesClient: PlacesClient
+    private lateinit var autocompleteFragment: AutocompleteSupportFragment
+
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        setContentView(R.layout.your_layout)
+
+        // Initialize the Places API
+        Places.initialize(applicationContext, "AIzaSyBVx2rnzhZzQp_9Tj0JsZb9hEC3ViDtJ_k")
+        placesClient = Places.createClient(this)
+
+        // Set up the autocomplete fragment
+        autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
+        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
+        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
+            override fun onPlaceSelected(place: Place) {
+                // Get the selected location's coordinates
+                val latLng = place.latLng
+                val locationText = "${latLng?.latitude}, ${latLng?.longitude}"
+                // Return the location text to the previous activity
+                val intent = Intent()
+                intent.putExtra("location", locationText)
+                setResult(Activity.RESULT_OK, intent)
+                finish()
+            }
+
+            override fun onError(status: Status) {
+                // Handle the error
+            }
+        })
     }
 }
 @Composable
@@ -668,7 +708,7 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
     Row(
         modifier = Modifier
             .fillMaxWidth()
-            .background(colorResource(id = R.color.orange))
+            //.background(colorResource(id = R.color.orange))
             .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically
@@ -679,15 +719,24 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
                 contentDescription = "Back"
             )
         }
+
+        val customTextStyle=TextStyle(
+        fontFamily = fontFamily1,
+        )
         Text(
             text = "Create Post",
-            style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 18.sp),
-            color = Color.Black
+            style=customTextStyle,
+            fontWeight = FontWeight.SemiBold,
+            fontSize = 16.sp,
+            lineHeight = 24.sp,
+            letterSpacing = 0.5.sp
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = Color.Black) ){
-            Text("Post",
-                style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.ExtraBold, fontSize = 16.5.sp),
+            colors = ButtonDefaults.buttonColors(containerColor = (colorResource(id = R.color.orange))) ){
+            Text("POST",
+                style=customTextStyle,
+                fontWeight = FontWeight.Normal,
+                fontSize = 12.sp,
                 color = Color.White
             )
         }
@@ -735,8 +784,8 @@ private fun isSameDay(date1: Date, date2: Date): Boolean {
 fun ImagePicker(imageUri: Uri?, onImageSelected: () -> Unit) {
     Box(
         modifier = Modifier
-            .fillMaxWidth()
-            .height(50.dp),
+            .width(185.dp)
+            .height(125.dp),
         contentAlignment = Alignment.Center
     ) {
         imageUri?.let {
@@ -764,7 +813,7 @@ fun ImagePicker(imageUri: Uri?, onImageSelected: () -> Unit) {
             shape = RoundedCornerShape(0.dp),
             modifier = Modifier
                 .fillMaxSize(),
-            containerColor = Color.White
+            containerColor = Color(226, 229, 234)
         )
     }
 }
