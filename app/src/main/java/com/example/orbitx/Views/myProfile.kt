@@ -1,5 +1,6 @@
 package com.example.orbitx.Views
 
+import android.content.Intent
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -58,6 +59,8 @@ import com.google.firebase.firestore.firestore
 @Composable
 fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
 
+    val context = LocalContext.current
+
 
     var profilePictureUrl by remember { mutableStateOf("") }
 
@@ -115,7 +118,7 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
             TopAppBar(
                 title = { Text(text = "Profile") },
                 navigationIcon = {
-                    IconButton(onClick = { /* Handle back navigation */ }) {
+                    IconButton(onClick = { navController.popBackStack() }) {
                         Icon(
                             imageVector = Icons.Default.ArrowBack,
                             contentDescription = "Back"
@@ -170,7 +173,16 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                         }
 
                         IconButton(
-                            onClick = { /* Handle share click */ },
+                            onClick = {
+                                val sendIntent: Intent = Intent().apply {
+                                    action = Intent.ACTION_SEND
+                                    putExtra(Intent.EXTRA_TEXT, "Checkout my profile on OrbitX: https://orbitxsocial.netlify.app/profile/$userId")
+                                    type = "text/plain"
+                                }
+                                val shareIntent = Intent.createChooser(sendIntent, null)
+                                context.startActivity(shareIntent)
+
+                            },
                             modifier = Modifier
                                 .align(Alignment.TopEnd)
                                 .padding(8.dp)

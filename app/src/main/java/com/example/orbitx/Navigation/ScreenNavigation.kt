@@ -3,16 +3,18 @@ package com.example.orbitx.Navigation
 import android.app.Activity
 import android.content.Intent
 import androidx.compose.runtime.Composable
-import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
-import androidx.navigation.navArgument
+import androidx.navigation.navDeepLink
 import com.example.orbitx.Views.EditProfileScreen
+import com.example.orbitx.Views.IndividualPost
+import com.example.orbitx.Views.IndividualProfile
 import com.example.orbitx.Views.MainChatScreen
 import com.example.orbitx.Views.MainScreen
 import com.example.orbitx.Views.SignInScreen
 import com.example.orbitx.Views.SignUpScreen
+import com.example.orbitx.Views.UserProfile
 import com.google.firebase.auth.FirebaseAuth
 
 @Composable
@@ -47,9 +49,35 @@ fun AppNavigation(activity: Activity, intent: Intent?) {
             val userUid = backStackEntry.arguments?.getString("userUid") ?: ""
             MainChatScreen(navController, userUid)
         }
+
+        val uri = "https://orbitxsocial.netlify.app/profile"
+        composable(
+            "individualprofile/{id}",
+            deepLinks = listOf(navDeepLink { uriPattern = "$uri/{id}" })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")
+            if (id != null) {
+                IndividualProfile(data=id,userProfile = UserProfile(
+                    profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
+
+                    ), navController = navController)
+            }
+        }
+
+        val uri2 = "https://orbitxsocial.netlify.app/posts"
+        composable(
+            "individualposts/{id}",
+            deepLinks = listOf(navDeepLink { uriPattern = "$uri2/{id}" })
+        ) { backStackEntry ->
+            val id = backStackEntry.arguments?.getString("id")
+            if (id != null) {
+                IndividualPost(data=id,navController)
+            }
+        }
+
     }
 
-    // Handle initial navigation based on intent
+
     intent?.let {
         val route = it.getStringExtra("EXTRA_SCREEN_ROUTE")
         val userUid = it.getStringExtra("uid")
