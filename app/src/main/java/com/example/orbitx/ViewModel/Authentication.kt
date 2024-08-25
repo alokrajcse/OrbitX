@@ -6,6 +6,7 @@ import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
 import com.example.orbitx.ChatRepository.User
 import com.example.orbitx.ChatRepository.fetchcurrentuid
+import com.example.orbitx.model.Post
 import com.example.orbitx.model.Posts
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.DataSnapshot
@@ -20,7 +21,6 @@ import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
 
 class AuthViewModel : ViewModel() {
-
     private val _userProfileData = MutableLiveData<List<User>>()
     val userProfileData: LiveData<List<User>> get() = _userProfileData
     private val db = FirebaseFirestore.getInstance()
@@ -133,6 +133,32 @@ class AuthViewModel : ViewModel() {
             }
     }
 
+    fun fetchLocation(postId: String, callback: (String) -> Unit) {
+        db.collection("posts").document(postId)
+            .get()
+            .addOnSuccessListener { document ->
+                val location = document.getString("location") ?: ""
+                callback(location)
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to get location", e)
+                callback("")
+            }
+    }
+
+
+    fun fetchHashtag(postId: String, callback: (String) -> Unit) {
+        db.collection("posts").document(postId)
+            .get()
+            .addOnSuccessListener { document ->
+                val hashtag = document.getString("hashtag") ?: ""
+                callback(hashtag)
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to get hashtag", e)
+                callback("")
+            }
+    }
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
 
