@@ -16,6 +16,7 @@ firebaseStorage = "21.0.0"
 firebaseFirestore = "25.0.0"
 firebaseMessaging = "24.0.0"
 appcompat = "1.7.0"
+firebaseFirestoreKtx = "25.1.0"
 
 [libraries]
 androidx-compose-material3-material3 = { module = "androidx.compose.material3:material3", version.ref = "material3Version" }
@@ -39,6 +40,7 @@ firebase-storage = { group = "com.google.firebase", name = "firebase-storage", v
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore", version.ref = "firebaseFirestore" }
 firebase-messaging = { group = "com.google.firebase", name = "firebase-messaging", version.ref = "firebaseMessaging" }
 androidx-appcompat = { group = "androidx.appcompat", name = "appcompat", version.ref = "appcompat" }
+firebase-firestore-ktx = { group = "com.google.firebase", name = "firebase-firestore-ktx", version.ref = "firebaseFirestoreKtx" }
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

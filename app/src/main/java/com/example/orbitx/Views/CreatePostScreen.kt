@@ -79,8 +79,8 @@ import androidx.compose.ui.text.font.FontFamily
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchusername
 import com.google.firebase.auth.auth
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.googlefonts.Font
+//import androidx.compose.ui.text.googlefonts.GoogleFont
+//import androidx.compose.ui.text.googlefonts.Font
 import androidx.core.app.ActivityCompat
 import androidx.core.content.ContextCompat
 import com.example.orbitx.model.Location
