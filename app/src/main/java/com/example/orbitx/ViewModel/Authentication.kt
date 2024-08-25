@@ -172,13 +172,18 @@ class AuthViewModel : ViewModel() {
     fun fetchusername(data: String, onReceivedname: (String) -> Unit) {
         Firebase.database.getReference("users").child(data).child("username")
             .get()
+
             .addOnSuccessListener { snapshot ->
+                println("username fetch success")
                 val name = snapshot.getValue(String::class.java) ?: "Old User"
                 onReceivedname(name)
             }
+
             .addOnFailureListener {
+                println("username fetch failed")
                 Log.e("Firebase", "Failed to fetch username", it)
             }
+
     }
 
     fun fetchProfileurl(data: String, onUrlReceived: (String) -> Unit) {

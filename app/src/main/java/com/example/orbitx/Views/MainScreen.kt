@@ -292,8 +292,17 @@ fun OrbitXPost(
     var usrname by remember { mutableStateOf("") }
     var profilepicurl by remember { mutableStateOf("") }
 
+
+
     viewModel.fetchusername(owneruserid) { it -> usrname = it }
     viewModel.fetchProfileurl(owneruserid) { it -> profilepicurl = it }
+
+
+    println("img url::$imageUrl")
+    println("postuid::$postuid")
+    println("owneruserid::$owneruserid")
+    println("profilepicurl::$profilepicurl")
+    println("usrname::$usrname")
 
     Column(
         modifier = Modifier
