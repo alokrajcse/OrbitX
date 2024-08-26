@@ -54,12 +54,16 @@ fun IndividualPost(data: String,navController: NavController, authViewModel: Aut
     var commentsCount by remember { mutableStateOf(0) }
     var formattedTimestamp by remember { mutableStateOf("") }
 
+    var hashtag by remember { mutableStateOf("") }
+    var location by remember { mutableStateOf("") }
 
     LaunchedEffect(data) {
-        db.collection("Posts").document(data).get().addOnSuccessListener {
+        db.collection("Posts2").document(data).get().addOnSuccessListener {
             title = it.get("text").toString() ?: ""
             owneruserid = it.get("owneruid").toString() ?: ""
             imageUrl = it.get("imageUrl").toString() ?: ""
+            hashtag=it.get("hashtag").toString()?:""
+            location=it.get("location").toString()?:""
 
             authViewModel.fetchusername(owneruserid) { fetchedUsername ->
                 username = fetchedUsername
@@ -120,11 +124,16 @@ fun IndividualPost(data: String,navController: NavController, authViewModel: Aut
                         fontSize = 16.sp,
                         color = Color.Black
                     )
-                    Text(
-                        text = "location",
-                        fontSize = 14.sp,
-                        color = Color.Gray
-                    )
+                    if (location!=null && location!="")
+                    {
+
+                        Text(
+                            text = "location",
+                            fontSize = 14.sp,
+                            color = Color.Gray
+                        )
+                    }
+
                 }
             }
 
@@ -205,6 +214,18 @@ fun IndividualPost(data: String,navController: NavController, authViewModel: Aut
                 modifier = Modifier.padding(start = 12.dp),
                 lineHeight = 20.sp,
             )
+
+            if (hashtag!=null &&hashtag!="")
+            {
+                Text(
+                    text = "#$hashtag",
+                    fontSize = 14.sp,
+                    modifier = Modifier.padding(start = 12.dp),
+                    lineHeight = 20.sp,
+                    color = Color.Blue
+                )
+            }
+
             Spacer(modifier = Modifier.height(8.dp))
             Text(
                 text = formattedTimestamp,
