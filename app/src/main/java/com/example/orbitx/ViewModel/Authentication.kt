@@ -139,7 +139,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun fetchLocation(postId: String, callback: (String) -> Unit) {
-        db.collection("Post2s").document(postId)
+        db.collection("Posts2").document(postId)
             .get()
             .addOnSuccessListener { document ->
                 val location = document.getString("location") ?: ""

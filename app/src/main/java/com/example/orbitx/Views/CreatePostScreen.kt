@@ -1,17 +1,11 @@
 package com.example.orbitx.Views
 
-import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
+
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,16 +40,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -72,28 +59,11 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.navigation.NavController
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontFamily
-import androidx.compose.ui.unit.IntOffset
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchusername
 import com.google.firebase.auth.auth
-//import androidx.compose.ui.text.googlefonts.GoogleFont
-//import androidx.compose.ui.text.googlefonts.Font
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.example.orbitx.model.Location
 import com.example.orbitx.ui.theme.fontFamily1
-import com.example.orbitx.ui.theme.provider
-import com.google.android.gms.common.api.Status
-import com.google.android.gms.location.LocationServices
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.PlacesClient
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -109,7 +79,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     val db = Firebase.firestore
     val textState = remember { mutableStateOf(TextFieldValue("")) }
     val postRef =
-        db.collection("Users").document("A43t07amgUmkKxz2zVOK") // replace with the actual post ID
+        db.collection("Users").document("A43t07amgUmkKxz2zVOK")
     var authorAvatarUrl by remember { mutableStateOf("") }
     var post by remember {
         mutableStateOf(
@@ -130,16 +100,10 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     }
     fetchProfileurl(cuid){it->profilepicurl=it}
     fetchusername(cuid){it->username=it}
-    val coroutineScope = rememberCoroutineScope()
-    val _sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded)
-
 
     var focusedContainerColor by remember { mutableStateOf(Color(226, 229, 234)) }
     LaunchedEffect(Unit) {
         launch {
-            coroutineScope.launch {
-                _sheetState.show() // Keep the sheet visible
-            }
             try {
                 val postSnapshot = postRef.get().await()
                 if (postSnapshot.exists()) {
@@ -159,32 +123,22 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     }
 
     val bottomSheetState = rememberModalBottomSheetState(false, { true })
-
+    val coroutineScope = rememberCoroutineScope()
     var openBottomSheet by rememberSaveable { mutableStateOf(true) }
-    // Activity result launcher to handle the image picking
+
     val imagePickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { viewModel.onImageSelected(it) }
         }
-
-  //  val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
-
-    if (true) {
+    val _sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded)
+    if (openBottomSheet) {
         ModalBottomSheetLayout(
             sheetState = _sheetState,
             scrimColor = Color.Transparent,
-
-
             sheetContent = {
                 Box(
                     modifier = Modifier
-
-                        .offset {
-                            // Check if the sheet is expanded or not
-                            val offsetY = if (_sheetState.isVisible) 0.dp else (-100).dp
-                            IntOffset(0, offsetY.roundToPx())
-
-                        }
+                        .offset(y = (-10).dp)
                 ) {
 
                 }
@@ -274,8 +228,8 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                             Icon(
                                                 imageVector = Icons.Filled.CalendarToday,
                                                 contentDescription = "Edit Location",
-                                                tint = (colorResource(id = R.color.orange)), // Change color here
-                                                modifier = Modifier.size(25.dp) // Change size here
+                                                tint = (colorResource(id = R.color.orange)),
+                                                modifier = Modifier.size(25.dp)
                                             )
                                         }
                                         Text(
@@ -292,15 +246,15 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                     }
                                 }
                                 Box(
-                                        modifier = Modifier
-                                            .height(25.dp)
-                                            .width(200.dp)
-                                            .padding(horizontal = 10.dp)
-                                            .background(
-                                                Color(226, 229, 234),
-                                                shape = RoundedCornerShape(10.dp)
-                                            ),
-                                contentAlignment = Alignment.Center
+                                    modifier = Modifier
+                                        .height(25.dp)
+                                        .width(200.dp)
+                                        .padding(horizontal = 10.dp)
+                                        .background(
+                                            Color(226, 229, 234),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
 
                                 ) {
                                     Row {
@@ -319,7 +273,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                                 .align(Alignment.CenterVertically),
                                         )
                                     }
-                            }
+                                }
                             }
 
                         }
@@ -345,8 +299,8 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                 Icon(
                                     imageVector = Icons.Filled.Hail,
                                     contentDescription = "Edit Location",
-                                    tint = (colorResource(id = R.color.orange)), // Change color here
-                                    modifier = Modifier.size(25.dp) // Change size here
+                                    tint = (colorResource(id = R.color.orange)),
+                                    modifier = Modifier.size(25.dp)
                                 )
                             }
                             Text(
@@ -359,8 +313,8 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                     }
                     Spacer(Modifier.height(8.dp))
                     Divider(
-                        color = Color.LightGray, // Set the color of the divider
-                        thickness = 1.dp,   // Set the thickness of the divider
+                        color = Color.LightGray,
+                        thickness = 1.dp,
 
                     )
                     TextField(
@@ -382,7 +336,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                             focusedContainerColor = focusedContainerColor
                         ),
                         textStyle = TextStyle(
-                            color = Color.Black  // Main text color
+                            color = Color.Black
                         ),
                         modifier = Modifier
                             .background(Color.Yellow)
@@ -395,9 +349,9 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         imagePickerLauncher = imagePickerLauncher,
                         imageUri = imageUri,
                         onOptionSelected = { option ->
-                            // Handle option selection if needed
+
                             coroutineScope.launch {
-                                _sheetState.show()
+                                _sheetState.hide()
                             }
                         },
                         onColorSelected = { color ->
@@ -410,10 +364,9 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         },
                         onHashtagTextChanged = { newHashtagText ->
                             HashtagText = newHashtagText
-                            viewModel.onTextChanged("$text")
+                            viewModel.onTextChanged("$text ")
                         }
                     )
-
                 }
             }
         }
@@ -558,11 +511,8 @@ fun PostOptionsBottomSheet(
                 )
             },
             confirmButton = {
-                Button(onClick = {
+                TextButton(onClick = {
                     onHashtagEntered(hashtagText)
-
-                    //textState.value = TextFieldValue(textState.value.text + " # " + hashtagText)
-
                     showDialog = false
                 }) {
                     Text("Confirm")
@@ -613,75 +563,24 @@ fun Location(onLocationEntered: (String) -> Unit) {
             onDismissRequest = { showDialog = false },
             title = { Text("Enter Location") },
             text = {
-                Column {
-                    TextField(
-                        value = locationText,
-                        onValueChange = { locationText = it },
-                        label = { Text("Location") }
-                    )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TextButton(onClick = {
-                            onLocationEntered(locationText)
-                            showDialog = false
-                        }) {
-                            Text("Confirm")
-                        }
-//                        Button(onClick = {
-//                            // Use the Google Places API to search for locations
-//                            val intent = Intent(context, SearchLocationActivity::class.java)
-//                            context.startActivity(intent)
-//                        }) {
-//                            Text("Search Location")
-//                        }
-                    }
-                }
+                TextField(
+                    value = locationText,
+                    onValueChange = { locationText = it },
+                    label = { Text("Location") }
+                )
             },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Dismiss")
+                TextButton(onClick = {
+                    onLocationEntered(locationText)
+                    showDialog = false
+                }) {
+                    Text("Confirm")
                 }
             }
         )
     }
 }
-class SearchLocationActivity : AppCompatActivity() {
-    private lateinit var placesClient: PlacesClient
-    private lateinit var autocompleteFragment: AutocompleteSupportFragment
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.your_layout)
-
-        // Initialize the Places API
-        Places.initialize(applicationContext, "AIzaSyBVx2rnzhZzQp_9Tj0JsZb9hEC3ViDtJ_k")
-        placesClient = Places.createClient(this)
-
-        // Set up the autocomplete fragment
-        autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
-        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
-        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
-            override fun onPlaceSelected(place: Place) {
-                // Get the selected location's coordinates
-                val latLng = place.latLng
-                val locationText = "${latLng?.latitude}, ${latLng?.longitude}"
-                // Return the location text to the previous activity
-                val intent = Intent()
-                intent.putExtra("location", locationText)
-                setResult(Activity.RESULT_OK, intent)
-                finish()
-            }
-
-            override fun onError(status: Status) {
-                // Handle the error
-            }
-        })
-    }
-}
 @Composable
 fun ColorPickerDialog(onColorSelected: (Color) -> Unit, onDismissRequest: () -> Unit) {
     AlertDialog(
@@ -730,12 +629,9 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             //.background(colorResource(id = R.color.orange))
-            .background(colorResource(id = R.color.orange))
-            .padding(horizontal = 8.dp, vertical = 4.dp)
-            ,
+            .padding(horizontal = 8.dp, vertical = 4.dp),
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically,
-
+        verticalAlignment = Alignment.CenterVertically
     ) {
         IconButton(onClick = onBackPressed) {
             Icon(
@@ -745,7 +641,7 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
         }
 
         val customTextStyle=TextStyle(
-        fontFamily = fontFamily1,
+            fontFamily = fontFamily1,
         )
         Text(
             text = "Create Post",
@@ -753,13 +649,13 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
             lineHeight = 24.sp,
-            letterSpacing = 0.5.sp,
+            letterSpacing = 0.5.sp
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = (colorResource(id = R.color.black))) ){
+            colors = ButtonDefaults.buttonColors(containerColor = (colorResource(id = R.color.orange))) ){
             Text("POST",
                 style=customTextStyle,
-                fontWeight = FontWeight.ExtraBold,
+                fontWeight = FontWeight.Normal,
                 fontSize = 12.sp,
                 color = Color.White
             )
