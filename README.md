@@ -3,14 +3,6 @@
 Your own feature-rich social media application designed to keep you connected and engaged with your friends and community 👥. 
  <img  alt="OrbitX Logo" height="200" width="200" src="https://github.com/user-attachments/assets/a5ec54ba-9f37-42d6-be69-85c447385d2e)">
 
-## Requirements 🔖
-
-* Any Operating System 🖥 (ie. MacOS X, Linux, Windows)
-* Any IDE with Kotlin and Jetpack Compose installed (ie. IntelliJ, Android Studio, VSCode etc)
-* A little knowledge of Kotlin and Jetpack Compose
-* A brain to think 🤓🤓
-
-## Features ✨
 
 
 Our app offers a modern and intuitive experience with essential social features to enhance your online presence.
