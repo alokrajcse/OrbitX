@@ -76,6 +76,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.unit.IntOffset
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchusername
 import com.google.firebase.auth.auth
@@ -129,10 +130,16 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     }
     fetchProfileurl(cuid){it->profilepicurl=it}
     fetchusername(cuid){it->username=it}
+    val coroutineScope = rememberCoroutineScope()
+    val _sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded)
+
 
     var focusedContainerColor by remember { mutableStateOf(Color(226, 229, 234)) }
     LaunchedEffect(Unit) {
         launch {
+            coroutineScope.launch {
+                _sheetState.show() // Keep the sheet visible
+            }
             try {
                 val postSnapshot = postRef.get().await()
                 if (postSnapshot.exists()) {
@@ -152,46 +159,34 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
     }
 
     val bottomSheetState = rememberModalBottomSheetState(false, { true })
-    val coroutineScope = rememberCoroutineScope()
+
     var openBottomSheet by rememberSaveable { mutableStateOf(true) }
     // Activity result launcher to handle the image picking
     val imagePickerLauncher =
         rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri: Uri? ->
             uri?.let { viewModel.onImageSelected(it) }
         }
-    val _sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded)
-    if (openBottomSheet) {
+
+  //  val sheetState = rememberModalBottomSheetState(ModalBottomSheetValue.Expanded)
+
+    if (true) {
         ModalBottomSheetLayout(
             sheetState = _sheetState,
             scrimColor = Color.Transparent,
+
+
             sheetContent = {
                 Box(
                     modifier = Modifier
-                        .offset(y = (-10).dp) // Adjust the offset value to move the sheet up
-                ) {
-                    PostOptionsBottomSheet(
-                        textState = textState,
-                        imagePickerLauncher = imagePickerLauncher,
-                        imageUri = imageUri,
-                        onOptionSelected = { option ->
-                            // Handle option selection if needed
-                            coroutineScope.launch {
-                                _sheetState.hide()
-                            }
-                        },
-                        onColorSelected = { color ->
-                            focusedContainerColor = color
-                        },
-                        locationText = locationText,
-                        onLocationTextChanged = { newLocationText ->
-                            locationText = newLocationText
-                            viewModel.onTextChanged("$text ")
-                        },
-                        onHashtagTextChanged = { newHashtagText ->
-                            HashtagText = newHashtagText
-                            viewModel.onTextChanged("$text ")
+
+                        .offset {
+                            // Check if the sheet is expanded or not
+                            val offsetY = if (_sheetState.isVisible) 0.dp else (-100).dp
+                            IntOffset(0, offsetY.roundToPx())
+
                         }
-                    )
+                ) {
+
                 }
             }
         ) {
@@ -207,8 +202,8 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         onPostClicked = { viewModel.createPost(context,navController, locationText, HashtagText) }
                     )
                     Divider(
-                        color = Color.LightGray, // Set the color of the divider
-                        thickness = 1.dp,   // Set the thickness of the divider
+                        color = Color.LightGray,
+                        thickness = 1.dp,
 
                     )
                     if (creatingPost) {
@@ -395,6 +390,30 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                             .height(300.dp),
                     )
 
+                    PostOptionsBottomSheet(
+                        textState = textState,
+                        imagePickerLauncher = imagePickerLauncher,
+                        imageUri = imageUri,
+                        onOptionSelected = { option ->
+                            // Handle option selection if needed
+                            coroutineScope.launch {
+                                _sheetState.show()
+                            }
+                        },
+                        onColorSelected = { color ->
+                            focusedContainerColor = color
+                        },
+                        locationText = locationText,
+                        onLocationTextChanged = { newLocationText ->
+                            locationText = newLocationText
+                            viewModel.onTextChanged("$text ")
+                        },
+                        onHashtagTextChanged = { newHashtagText ->
+                            HashtagText = newHashtagText
+                            viewModel.onTextChanged("$text")
+                        }
+                    )
+
                 }
             }
         }
@@ -541,7 +560,9 @@ fun PostOptionsBottomSheet(
             confirmButton = {
                 Button(onClick = {
                     onHashtagEntered(hashtagText)
-                    textState.value = TextFieldValue(textState.value.text + " " )
+
+                    //textState.value = TextFieldValue(textState.value.text + " # " + hashtagText)
+
                     showDialog = false
                 }) {
                     Text("Confirm")
@@ -610,13 +631,13 @@ fun Location(onLocationEntered: (String) -> Unit) {
                         }) {
                             Text("Confirm")
                         }
-                        Button(onClick = {
-                            // Use the Google Places API to search for locations
-                            val intent = Intent(context, SearchLocationActivity::class.java)
-                            context.startActivity(intent)
-                        }) {
-                            Text("Search Location")
-                        }
+//                        Button(onClick = {
+//                            // Use the Google Places API to search for locations
+//                            val intent = Intent(context, SearchLocationActivity::class.java)
+//                            context.startActivity(intent)
+//                        }) {
+//                            Text("Search Location")
+//                        }
                     }
                 }
             },
@@ -709,9 +730,12 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             //.background(colorResource(id = R.color.orange))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .background(colorResource(id = R.color.orange))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            ,
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+
     ) {
         IconButton(onClick = onBackPressed) {
             Icon(
@@ -729,13 +753,13 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
             lineHeight = 24.sp,
-            letterSpacing = 0.5.sp
+            letterSpacing = 0.5.sp,
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = (colorResource(id = R.color.orange))) ){
+            colors = ButtonDefaults.buttonColors(containerColor = (colorResource(id = R.color.black))) ){
             Text("POST",
                 style=customTextStyle,
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 12.sp,
                 color = Color.White
             )

@@ -145,7 +145,7 @@ fun ChatCardItem(chatCard: ChatCard, navController: NavHostController) {
             val date = Date(currentTimeMillis)
             val formattedTime = sdf.format(date)
             Text(
-                text = formattedTime,
+                text = if (formattedTime=="05:30") "" else formattedTime,
                 textAlign = TextAlign.End
             )
         }

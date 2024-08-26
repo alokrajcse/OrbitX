@@ -48,7 +48,9 @@ class CreatePostViewModel : ViewModel() {
             return
         }
 
+
         uploadImageToFirebase(imageUri.value!!) { imageUrl ->
+            println("get text value::${text.value}")
             val post = Post(
                 text = text.value,
                 imageUrl = imageUrl,

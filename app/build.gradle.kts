@@ -106,6 +106,8 @@ dependencies {
     implementation ("com.google.android.libraries.places:places:3.5.0")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
     implementation ("com.android.volley:volley:1.2.1")
+    implementation("androidx.core:core-splashscreen:1.0.0")
+
 
 
 
