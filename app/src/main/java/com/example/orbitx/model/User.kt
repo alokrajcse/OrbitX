@@ -5,5 +5,5 @@ data class User(
     val username: String="",
     val userId: String="",
     val isFollowing: Boolean=false,
-    val profilepictureurl: String = ""
+    val profilepictureurl: String="https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg"
 )

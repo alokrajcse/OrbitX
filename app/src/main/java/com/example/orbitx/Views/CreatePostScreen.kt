@@ -8,8 +8,10 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
+import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.grid.GridCells
 import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
 import androidx.compose.foundation.shape.CircleShape
@@ -37,6 +39,7 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
@@ -131,26 +134,23 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
             uri?.let { viewModel.onImageSelected(it) }
         }
     val _sheetState = ModalBottomSheetState(ModalBottomSheetValue.Expanded)
-    if (openBottomSheet) {
-        ModalBottomSheetLayout(
-            sheetState = _sheetState,
-            scrimColor = Color.Transparent,
-            sheetContent = {
-                Box(
-                    modifier = Modifier
-                        .offset(y = (-10).dp)
-                ) {
 
-                }
-            }
-        ) {
+    LazyColumn(
+        modifier = Modifier
+
+    ) {
+
+        item {
             Surface(
                 color = Color.White,
                 modifier = Modifier
                     .padding(top = 0.dp)
                     .fillMaxSize()
             ) {
+
                 Column() {
+
+
                     TopBar(
                         onBackPressed = { navController.navigateUp() },
                         onPostClicked = { viewModel.createPost(context,navController, locationText, HashtagText) }
@@ -159,7 +159,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         color = Color.LightGray,
                         thickness = 1.dp,
 
-                    )
+                        )
                     if (creatingPost) {
                         Column(
                             modifier = Modifier
@@ -316,7 +316,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         color = Color.LightGray,
                         thickness = 1.dp,
 
-                    )
+                        )
                     TextField(
                         value = textState.value,
                         onValueChange = {
@@ -341,8 +341,30 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         modifier = Modifier
                             .background(Color.Yellow)
                             .fillMaxWidth()
-                            .height(300.dp),
+                            .height(200.dp),
                     )
+
+                    if (imageUri!=null)
+                    {
+
+
+                        Card {
+                            Image(
+                                painter = rememberAsyncImagePainter(
+                                    ImageRequest.Builder(LocalContext.current)
+                                        .data(imageUri)
+                                        .crossfade(true)
+                                        .build()
+                                ),
+                                contentDescription = "picture",
+                                contentScale = ContentScale.Crop,
+                                modifier = Modifier
+                                    .size(100.dp)
+                                    .clip(CircleShape)
+                                    .border(2.dp, MaterialTheme.colorScheme.primary, CircleShape)
+                            )
+                        }
+                    }
 
                     PostOptionsBottomSheet(
                         textState = textState,
@@ -369,6 +391,21 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                     )
                 }
             }
+
+        }
+
+    }
+
+
+    if (openBottomSheet) {
+        ModalBottomSheetLayout(
+            sheetState = _sheetState,
+            scrimColor = Color.Transparent,
+            sheetContent = {
+
+            }
+        ) {
+
         }
     }
 }

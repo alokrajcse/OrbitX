@@ -89,6 +89,7 @@ class ChatViewModel : ViewModel() {
                 val bio = snapshot.getValue(String::class.java) ?: "https://wallpapers.com/images/featured-full/link-pictures-16mi3e7v5hxno9c4.jpg"
                 onBioReceived(bio)
             }.addOnFailureListener {
+
                 Log.e("Firebase", "Failed to fetch bio", it)
             }
     }
