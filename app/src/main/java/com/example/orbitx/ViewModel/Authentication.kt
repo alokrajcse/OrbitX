@@ -134,7 +134,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun fetchLocation(postId: String, callback: (String) -> Unit) {
-        db.collection("posts").document(postId)
+        db.collection("Posts").document(postId)
             .get()
             .addOnSuccessListener { document ->
                 val location = document.getString("location") ?: ""
@@ -148,7 +148,7 @@ class AuthViewModel : ViewModel() {
 
 
     fun fetchHashtag(postId: String, callback: (String) -> Unit) {
-        db.collection("posts").document(postId)
+        db.collection("Posts").document(postId)
             .get()
             .addOnSuccessListener { document ->
                 val hashtag = document.getString("hashtag") ?: ""
