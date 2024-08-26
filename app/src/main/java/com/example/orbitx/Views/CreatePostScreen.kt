@@ -1,17 +1,11 @@
 package com.example.orbitx.Views
 
-import android.Manifest
-import android.app.Activity
-import android.content.Context
-import android.content.Intent
-import android.content.pm.PackageManager
+
 import android.net.Uri
-import android.os.Bundle
 import android.util.Log
 import androidx.activity.compose.ManagedActivityResultLauncher
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.appcompat.app.AppCompatActivity
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
@@ -46,16 +40,9 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.AnnotatedString
-import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.TextStyle
-import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.input.OffsetMapping
 import androidx.compose.ui.text.input.TextFieldValue
-import androidx.compose.ui.text.input.TransformedText
-import androidx.compose.ui.text.input.VisualTransformation
-import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.sp
 import coil.compose.AsyncImage
 import coil.compose.rememberAsyncImagePainter
@@ -72,27 +59,11 @@ import com.google.firebase.firestore.firestore
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.tasks.await
 import androidx.navigation.NavController
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.res.colorResource
-import androidx.compose.ui.text.font.FontFamily
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.ChatRepository.fetchusername
 import com.google.firebase.auth.auth
-import androidx.compose.ui.text.googlefonts.GoogleFont
-import androidx.compose.ui.text.googlefonts.Font
-import androidx.core.app.ActivityCompat
-import androidx.core.content.ContextCompat
-import com.example.orbitx.model.Location
 import com.example.orbitx.ui.theme.fontFamily1
-import com.example.orbitx.ui.theme.provider
-import com.google.android.gms.common.api.Status
-import com.google.android.gms.location.LocationServices
-import com.google.android.libraries.places.api.Places
-import com.google.android.libraries.places.api.model.Place
-import com.google.android.libraries.places.api.net.PlacesClient
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener
 
 
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalMaterialApi::class)
@@ -297,15 +268,15 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                     }
                                 }
                                 Box(
-                                        modifier = Modifier
-                                            .height(25.dp)
-                                            .width(200.dp)
-                                            .padding(horizontal = 10.dp)
-                                            .background(
-                                                Color(226, 229, 234),
-                                                shape = RoundedCornerShape(10.dp)
-                                            ),
-                                contentAlignment = Alignment.Center
+                                    modifier = Modifier
+                                        .height(25.dp)
+                                        .width(200.dp)
+                                        .padding(horizontal = 10.dp)
+                                        .background(
+                                            Color(226, 229, 234),
+                                            shape = RoundedCornerShape(10.dp)
+                                        ),
+                                    contentAlignment = Alignment.Center
 
                                 ) {
                                     Row {
@@ -324,7 +295,7 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                                 .align(Alignment.CenterVertically),
                                         )
                                     }
-                            }
+                                }
                             }
 
                         }
@@ -539,9 +510,8 @@ fun PostOptionsBottomSheet(
                 )
             },
             confirmButton = {
-                Button(onClick = {
+                TextButton(onClick = {
                     onHashtagEntered(hashtagText)
-                    textState.value = TextFieldValue(textState.value.text + " " + hashtagText)
                     showDialog = false
                 }) {
                     Text("Confirm")
@@ -592,75 +562,24 @@ fun Location(onLocationEntered: (String) -> Unit) {
             onDismissRequest = { showDialog = false },
             title = { Text("Enter Location") },
             text = {
-                Column {
                     TextField(
                         value = locationText,
                         onValueChange = { locationText = it },
                         label = { Text("Location") }
                     )
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(top = 8.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween
-                    ) {
-                        TextButton(onClick = {
-                            onLocationEntered(locationText)
-                            showDialog = false
-                        }) {
-                            Text("Confirm")
-                        }
-                        Button(onClick = {
-                            // Use the Google Places API to search for locations
-                            val intent = Intent(context, SearchLocationActivity::class.java)
-                            context.startActivity(intent)
-                        }) {
-                            Text("Search Location")
-                        }
-                    }
-                }
-            },
+                   },
             confirmButton = {
-                TextButton(onClick = { showDialog = false }) {
-                    Text("Dismiss")
+                TextButton(onClick = {
+                    onLocationEntered(locationText)
+                    showDialog = false
+                }) {
+                    Text("Confirm")
                 }
             }
         )
     }
 }
-class SearchLocationActivity : AppCompatActivity() {
-    private lateinit var placesClient: PlacesClient
-    private lateinit var autocompleteFragment: AutocompleteSupportFragment
 
-    override fun onCreate(savedInstanceState: Bundle?) {
-        super.onCreate(savedInstanceState)
-        setContentView(R.layout.your_layout)
-
-        // Initialize the Places API
-        Places.initialize(applicationContext, "AIzaSyBVx2rnzhZzQp_9Tj0JsZb9hEC3ViDtJ_k")
-        placesClient = Places.createClient(this)
-
-        // Set up the autocomplete fragment
-        autocompleteFragment = supportFragmentManager.findFragmentById(R.id.autocomplete_fragment) as AutocompleteSupportFragment
-        autocompleteFragment.setPlaceFields(listOf(Place.Field.ID, Place.Field.NAME, Place.Field.LAT_LNG))
-        autocompleteFragment.setOnPlaceSelectedListener(object : PlaceSelectionListener {
-            override fun onPlaceSelected(place: Place) {
-                // Get the selected location's coordinates
-                val latLng = place.latLng
-                val locationText = "${latLng?.latitude}, ${latLng?.longitude}"
-                // Return the location text to the previous activity
-                val intent = Intent()
-                intent.putExtra("location", locationText)
-                setResult(Activity.RESULT_OK, intent)
-                finish()
-            }
-
-            override fun onError(status: Status) {
-                // Handle the error
-            }
-        })
-    }
-}
 @Composable
 fun ColorPickerDialog(onColorSelected: (Color) -> Unit, onDismissRequest: () -> Unit) {
     AlertDialog(
@@ -721,7 +640,7 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
         }
 
         val customTextStyle=TextStyle(
-        fontFamily = fontFamily1,
+            fontFamily = fontFamily1,
         )
         Text(
             text = "Create Post",
