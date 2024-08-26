@@ -40,7 +40,9 @@ class PostRepository(private val db: FirebaseFirestore) {
             "owneruid" to cuid,
             "timestamp" to timestamp,
             "likesCount" to likesCount,
-            "commentsCount" to commentsCount
+            "commentsCount" to commentsCount,
+            "location" to location,
+            "hashtag" to hashtag
         )
     }
 }

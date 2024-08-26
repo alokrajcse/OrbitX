@@ -54,7 +54,6 @@ import java.util.Locale
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
-    var isRefreshing by remember { mutableStateOf(false) }
     var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
 
     val viewModel: AuthViewModel = viewModel()
@@ -118,10 +117,10 @@ fun HomeScreen(navController: NavController) {
                 userProfileData = userProfileData,
                 postsList = postsList,
                 onRefresh = {
-                    isRefreshing = true
+                    // Set isRefreshing to true to start the refresh animation
                     viewModel.fetchPostsFromFirestore { posts ->
                         postsList = posts
-                        isRefreshing = false
+                        // Trigger refresh completion
                         Log.d("HomeScreen", "Posts refreshed: ${posts.size}")
                     }
                 }
@@ -129,6 +128,7 @@ fun HomeScreen(navController: NavController) {
         }
     }
 }
+
 
 
 @Composable
@@ -199,22 +199,23 @@ fun MainScreen(activity: Activity) {
         }
     }
 }
-
 @Composable
 fun OrbitXFeed(
     userProfileData: List<User>,
     postsList: List<Posts>,
     onRefresh: () -> Unit
 ) {
+    val context=LocalContext.current
     var isRefreshing by remember { mutableStateOf(false) }
-    val context= LocalContext.current
+
+    // Handle the swipe refresh state
+    val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
 
     SwipeRefresh(
-        state = rememberSwipeRefreshState(isRefreshing),
+        state = swipeRefreshState,
         onRefresh = {
-            isRefreshing = true
+            // Trigger the refresh action
             onRefresh()
-            isRefreshing = false
         }
     ) {
         LazyColumn(
@@ -225,14 +226,13 @@ fun OrbitXFeed(
             items(postsList) { post ->
                 val user = userProfileData.find { it.userId == post.owneruid }
 
-
                 OrbitXPost(
                     profileImageUrl = user?.profilepictureurl ?: "",
                     username = user?.username ?: "Unknown User",
-                    location = "Location",
+                    location = post.location,
+                    hashtag = post.hashtag,
                     owneruserid = post.owneruid,
                     postuid = post.postId,
-
                     imageUrl = post.imageUrl,
                     text = post.text,
                     initialIsLiked = false,
@@ -260,12 +260,15 @@ fun OrbitXFeed(
     }
 }
 
+
 @Composable
 fun OrbitXPost(
     profileImageUrl: String,
     username: String,
     postuid: String,
+
     location: String,
+    hashtag: String,
     owneruserid: String,
     imageUrl: String,
     text: String,
@@ -412,6 +415,19 @@ fun OrbitXPost(
             modifier = Modifier.padding(start = 12.dp),
             lineHeight = 20.sp,
         )
+
+        if (hashtag!="" && hashtag!=null)
+        {
+            Text(
+                text = "#"+hashtag,
+                fontSize = 14.sp,
+                color = Color.Blue,
+                modifier = Modifier.padding(start = 12.dp),
+                lineHeight = 20.sp,
+            )
+
+        }
+
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = formattedTimestamp,
