@@ -36,6 +36,7 @@ fun SignUpScreen(
     var username by remember { mutableStateOf(TextFieldValue("")) }
     var email by remember { mutableStateOf(TextFieldValue("")) }
     var password by remember { mutableStateOf(TextFieldValue("")) }
+    var errorMessage by remember { mutableStateOf("") }
     val context = LocalContext.current
 
     Scaffold(
@@ -86,7 +87,8 @@ fun SignUpScreen(
                                 fontFamily = urbanistLight,
                                 fontSize = 14.sp
                             )
-                        }
+                        },
+                        isError = errorMessage.isNotEmpty() && username.text.isEmpty()
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     OutlinedTextField(
@@ -106,7 +108,8 @@ fun SignUpScreen(
                                 fontFamily = urbanistLight,
                                 fontSize = 14.sp
                             )
-                        }
+                        },
+                        isError = errorMessage.isNotEmpty() && email.text.isEmpty()
                     )
                     Spacer(modifier = Modifier.height(14.dp))
                     OutlinedTextField(
@@ -126,15 +129,32 @@ fun SignUpScreen(
                                 fontFamily = urbanistLight,
                                 fontSize = 14.sp
                             )
-                        }
+                        },
+                        isError = errorMessage.isNotEmpty() && password.text.isEmpty()
                     )
+
+                    if (errorMessage.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 14.sp,
+                            fontFamily = urbanistLight
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(40.dp))
                     val customButtonColor = Color(0xFF492468)
                     Button(
                         onClick = {
-                            viewModel.signUp(username.text,email.text, password.text) {
-                                Toast.makeText(context, "Account successfully created!", Toast.LENGTH_SHORT).show()
-                                onNavigateBackToLogin()
+                            if (username.text.isEmpty() || email.text.isEmpty() || password.text.isEmpty()) {
+                                errorMessage = "Please fill in all fields."
+                            } else {
+                                errorMessage = ""
+                                viewModel.signUp(username.text, email.text, password.text) {
+                                    Toast.makeText(context, "Account successfully created!", Toast.LENGTH_SHORT).show()
+                                    onNavigateBackToLogin()
+                                }
                             }
                         },
                         colors = ButtonDefaults.buttonColors(containerColor = customButtonColor),
@@ -143,7 +163,7 @@ fun SignUpScreen(
                             .height(50.dp),
                         shape = RoundedCornerShape(0.dp),
                     ) {
-                        Text(text = "Sign Up", color = Color.White, fontSize = 17.sp,fontFamily = urbanistLight)
+                        Text(text = "Sign Up", color = Color.White, fontSize = 17.sp, fontFamily = urbanistLight)
                     }
                     Spacer(modifier = Modifier.height(50.dp))
                 }

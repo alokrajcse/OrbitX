@@ -29,6 +29,11 @@ fun SignInScreen(
     val urbanistLight = FontFamily(Font(R.font.urbanist_light))
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
     val customColor = Color(0xFF121212)
+
+    var email by remember { mutableStateOf(TextFieldValue("")) }
+    var password by remember { mutableStateOf(TextFieldValue("")) }
+    var errorMessage by remember { mutableStateOf("") }
+
     Scaffold(
         modifier = Modifier.fillMaxSize(),
         content = { paddingValues ->
@@ -60,7 +65,7 @@ fun SignInScreen(
                         fontFamily = urbanistMedium
                     )
                     Spacer(modifier = Modifier.height(70.dp))
-                    var email by remember { mutableStateOf(TextFieldValue("")) }
+
                     OutlinedTextField(
                         value = email,
                         onValueChange = { email = it },
@@ -78,10 +83,12 @@ fun SignInScreen(
                                 fontSize = 14.sp,
                                 fontFamily = urbanistLight
                             )
-                        }
+                        },
+                        isError = errorMessage.isNotEmpty() && email.text.isEmpty()
                     )
+
                     Spacer(modifier = Modifier.height(14.dp))
-                    var password by remember { mutableStateOf(TextFieldValue("")) }
+
                     OutlinedTextField(
                         value = password,
                         onValueChange = { password = it },
@@ -99,12 +106,31 @@ fun SignInScreen(
                                 fontSize = 14.sp,
                                 fontFamily = urbanistLight
                             )
-                        }
+                        },
+                        isError = errorMessage.isNotEmpty() && password.text.isEmpty()
                     )
+
+                    if (errorMessage.isNotEmpty()) {
+                        Spacer(modifier = Modifier.height(10.dp))
+                        Text(
+                            text = errorMessage,
+                            color = MaterialTheme.colorScheme.error,
+                            fontSize = 14.sp,
+                            fontFamily = urbanistLight
+                        )
+                    }
+
                     Spacer(modifier = Modifier.height(40.dp))
                     val customButtonColor = Color(0xFF492468)
                     Button(
-                        onClick = { viewModel.signIn(email.text, password.text, onNavigateToHome) },
+                        onClick = {
+                            if (email.text.isEmpty() || password.text.isEmpty()) {
+                                errorMessage = "Please fill in all fields."
+                            } else {
+                                errorMessage = ""
+                                viewModel.signIn(email.text, password.text, onNavigateToHome)
+                            }
+                        },
                         colors = ButtonDefaults.buttonColors(containerColor = customButtonColor),
                         modifier = Modifier
                             .width(150.dp)
@@ -113,6 +139,7 @@ fun SignInScreen(
                     ) {
                         Text(text = "Log In", color = Color.White, fontSize = 17.sp, fontFamily = urbanistLight)
                     }
+
                     Spacer(modifier = Modifier.height(10.dp))
                     Text(
                         text = "Forgot Password?",
@@ -123,6 +150,7 @@ fun SignInScreen(
                             .align(Alignment.CenterHorizontally),
                         fontFamily = urbanistLight
                     )
+
                     Spacer(modifier = Modifier.height(50.dp))
                 }
                 Row(
@@ -133,7 +161,7 @@ fun SignInScreen(
                     horizontalArrangement = Arrangement.Center
                 ) {
                     Text(
-                        text = "Still without account?",
+                        text = "Don't have an account?",
                         fontSize = 14.sp,
                         fontFamily = urbanistLight
                     )

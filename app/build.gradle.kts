@@ -68,6 +68,7 @@ dependencies {
     implementation(libs.firebase.storage)
     implementation(libs.firebase.messaging)
     implementation(libs.androidx.appcompat)
+    implementation(libs.firebase.firestore.ktx)
 
     testImplementation(libs.junit)
     androidTestImplementation(libs.androidx.junit)
@@ -79,14 +80,12 @@ dependencies {
     implementation(platform("com.google.firebase:firebase-bom:33.1.2"))
     implementation("com.google.firebase:firebase-analytics")
     implementation("com.google.firebase:firebase-auth")
-    implementation("com.google.firebase:firebase-firestore")
+
     implementation("androidx.navigation:navigation-compose:2.7.7")
     implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
     implementation("io.coil-kt:coil-compose:2.7.0")
     implementation("io.coil-kt:coil:2.7.0")
-    implementation("io.coil-kt:coil-compose:2.7.0")
-    implementation ("io.coil-kt:coil-compose:2.7.0")
-    implementation("androidx.lifecycle:lifecycle-viewmodel-compose:2.8.4")
+
     implementation ("androidx.activity:activity-ktx:1.9.1")
     implementation ("androidx.activity:activity-compose:1.9.1")
     implementation ("androidx.compose.material3:material3:1.2.1")
@@ -107,5 +106,8 @@ dependencies {
     implementation ("com.google.android.libraries.places:places:3.5.0")
     implementation ("androidx.lifecycle:lifecycle-livedata-ktx:2.6.1")
     implementation ("com.android.volley:volley:1.2.1")
+
+
+
 
 }

@@ -1,5 +1,6 @@
 package com.example.orbitx
 
+import android.annotation.SuppressLint
 import android.app.NotificationChannel
 import android.app.NotificationManager
 import android.app.PendingIntent
@@ -30,6 +31,7 @@ import java.util.Random
 class FirebaseService : FirebaseMessagingService() {
 
     override fun onMessageReceived(remoteMessage: RemoteMessage) {
+        println("notification received")
 
         if (remoteMessage.data.isNotEmpty()) {
             val title = remoteMessage.data["title2"]
@@ -56,6 +58,7 @@ class FirebaseService : FirebaseMessagingService() {
     }
 
 
+    @SuppressLint("SuspiciousIndentation")
     private fun showNotificationWithUserUid(userUid: String?, route: String?, title: String?, body: String?, receiverUid: String?) {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
         val notificationId = Random().nextInt()

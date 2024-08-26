@@ -2,6 +2,7 @@ package com.example.orbitx.Views
 
 import android.annotation.SuppressLint
 import android.app.Activity
+import android.content.Intent
 import android.util.Log
 import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
@@ -41,9 +42,6 @@ import androidx.navigation.NavController
 import coil.compose.AsyncImage
 import coil.request.ImageRequest
 import com.example.orbitx.ChatRepository.User
-import com.example.orbitx.ChatRepository.fetchProfileurl
-import com.example.orbitx.ChatRepository.fetchcurrentuid
-import com.example.orbitx.ChatRepository.fetchusername
 import com.example.orbitx.Navigation.BottomNavigationBar
 import com.example.orbitx.model.Posts
 import com.google.accompanist.swiperefresh.SwipeRefresh
@@ -53,83 +51,6 @@ import java.util.Date
 import java.util.Locale
 
 @SuppressLint("UnusedMaterial3ScaffoldPaddingParameter")
-//@Composable
-//fun HomeScreen(navController: NavController) {
-//    val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
-//    var isRefreshing by remember { mutableStateOf(false) }
-//    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
-//
-//    val viewModel: AuthViewModel = viewModel()
-//    val userProfileData by viewModel.userProfileData.observeAsState(emptyList())
-//
-//    LaunchedEffect(Unit) {
-//        viewModel.fetchPostsFromFirestore { posts ->
-//            postsList = posts
-//            Log.d("HomeScreen", "Posts fetched: ${posts.size}")
-//        }
-//
-//    }
-//
-//
-//    Scaffold(
-//        modifier = Modifier.fillMaxSize(),
-//        topBar = {
-//            Box(
-//                modifier = Modifier
-//                    .fillMaxWidth()
-//                    .background(
-//                        Brush.verticalGradient(
-//                            listOf(
-//                                Color(0xFFF85A4F),
-//                                Color(0xFFE49E99)
-//                            )
-//                        )
-//                    )
-//            ) {
-//                Row(
-//                    verticalAlignment = Alignment.CenterVertically,
-//                    modifier = Modifier
-//                        .fillMaxWidth()
-//                        .padding(5.dp)
-//                ) {
-//                    Text(
-//                        text = "OrbitX",
-//                        modifier = Modifier
-//                            .padding(10.dp)
-//                            .weight(1f),
-//                        fontSize = 25.sp,
-//                        fontWeight = FontWeight.Bold,
-//                        fontFamily = urbanistMedium,
-//                        color = Color.Black
-//                    )
-//
-//                    IconButton(onClick = { navController.navigate("chats") }) {
-//                        Image(
-//                            painter = painterResource(id = R.drawable.messagebutton),
-//                            contentDescription = "",
-//                            modifier = Modifier.height(30.dp)
-//                        )
-//                    }
-//                }
-//            }
-//        }
-//    ) {
-//        Box(modifier = Modifier.padding(top = 60.dp)) {
-//            OrbitXFeed(
-//                userProfileData = userProfileData,
-//                postsList = postsList,
-//                onRefresh = {
-//                    isRefreshing = true
-//                    viewModel.fetchPostsFromFirestore { posts ->
-//                        postsList = posts
-//                        isRefreshing = false
-//                    }
-//                }
-//            )
-//        }
-//    }
-//}
-
 @Composable
 fun HomeScreen(navController: NavController) {
     val urbanistMedium = FontFamily(Font(R.font.urbanist_medium))
@@ -158,8 +79,8 @@ fun HomeScreen(navController: NavController) {
                     .background(
                         Brush.verticalGradient(
                             listOf(
-                                Color(0xFFF85A4F),
-                                Color(0xFFE49E99)
+                                Color(0xFFE76A62),
+                                Color(0xFFE76A62)
                             )
                         )
                     )
@@ -267,6 +188,14 @@ fun MainScreen(activity: Activity) {
                 val data = backStackEntry.arguments?.getString("data") ?: ""
                 MainChatScreen(navController, data)
             }
+            composable("otheruserprofile/{data}", arguments = listOf(navArgument("data") { type = NavType.StringType })) { backStackEntry ->
+                val data = backStackEntry.arguments?.getString("data") ?: ""
+                otherUserProfileSection(data=data,userProfile = UserProfile(
+                    profilePictureUrl = "https://cdn-icons-png.flaticon.com/128/4322/4322991.png",
+
+                    ), navController = navController
+                )
+            }
         }
     }
 }
@@ -278,6 +207,7 @@ fun OrbitXFeed(
     onRefresh: () -> Unit
 ) {
     var isRefreshing by remember { mutableStateOf(false) }
+    val context= LocalContext.current
 
     SwipeRefresh(
         state = rememberSwipeRefreshState(isRefreshing),
@@ -301,6 +231,8 @@ fun OrbitXFeed(
                     username = user?.username ?: "Unknown User",
                     location = "Location",
                     owneruserid = post.owneruid,
+                    postuid = post.postId,
+
                     imageUrl = post.imageUrl,
                     text = post.text,
                     initialIsLiked = false,
@@ -310,9 +242,17 @@ fun OrbitXFeed(
                     onComment = { commentText ->
                         println("Comment posted: $commentText")
                     },
-                    onShare = { /* Handle share action */ },
+                    onShare = {
+                        val sendIntent: Intent = Intent().apply {
+                            action = Intent.ACTION_SEND
+                            putExtra(Intent.EXTRA_TEXT, "Checkout this post on OrbitX: https://orbitxsocial.netlify.app/posts/${post.postId}")
+                            type = "text/plain"
+                        }
+                        val shareIntent = Intent.createChooser(sendIntent, null)
+                        context.startActivity(shareIntent)
+                    },
                     onLikeChange = { isLiked ->
-                        // Handle like change
+
                     }
                 )
             }
@@ -324,6 +264,7 @@ fun OrbitXFeed(
 fun OrbitXPost(
     profileImageUrl: String,
     username: String,
+    postuid: String,
     location: String,
     owneruserid: String,
     imageUrl: String,
@@ -335,8 +276,11 @@ fun OrbitXPost(
     onComment: (String) -> Unit,
     onShare: () -> Unit,
     onLikeChange: (Boolean) -> Unit,
-    viewModel: AuthViewModel= viewModel(),
+    viewModel: AuthViewModel = viewModel(),
 ) {
+    val initialCommentsCount: Int = 0
+    var commentsCount by remember { mutableStateOf(initialCommentsCount) }
+
     var isLiked by remember { mutableStateOf(initialIsLiked) }
     var likeCounter by remember { mutableStateOf(likesCount) }
     var isCommentDialogOpen by remember { mutableStateOf(false) }
@@ -348,11 +292,17 @@ fun OrbitXPost(
     var usrname by remember { mutableStateOf("") }
     var profilepicurl by remember { mutableStateOf("") }
 
-    viewModel.fetchusername(owneruserid){it-> usrname=it}
-    viewModel.fetchProfileurl(owneruserid){it-> profilepicurl=it}
 
 
+    viewModel.fetchusername(owneruserid) { it -> usrname = it }
+    viewModel.fetchProfileurl(owneruserid) { it -> profilepicurl = it }
 
+
+    println("img url::$imageUrl")
+    println("postuid::$postuid")
+    println("owneruserid::$owneruserid")
+    println("profilepicurl::$profilepicurl")
+    println("usrname::$usrname")
 
     Column(
         modifier = Modifier
@@ -410,14 +360,13 @@ fun OrbitXPost(
                     .height(250.dp)
             )
         }
-
         Spacer(modifier = Modifier.height(8.dp))
-
         Row {
             IconButton(onClick = {
                 isLiked = !isLiked
                 likeCounter += if (isLiked) 1 else -1
                 onLikeChange(isLiked)
+                viewModel.updateLikesCount(postuid, isLiked)
             }) {
                 Icon(
                     imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
@@ -435,7 +384,9 @@ fun OrbitXPost(
                 )
             }
 
-            IconButton(onClick = onShare) {
+            IconButton(onClick = {
+                onShare()
+            }) {
                 Icon(
                     imageVector = Icons.Filled.Share,
                     contentDescription = "Share",
@@ -443,7 +394,6 @@ fun OrbitXPost(
                 )
             }
         }
-
         Text(
             text = "$likeCounter Likes",
             fontWeight = FontWeight.Bold,
@@ -470,7 +420,6 @@ fun OrbitXPost(
             modifier = Modifier.padding(start = 12.dp, top = 4.dp),
         )
     }
-
     if (isCommentDialogOpen) {
         AlertDialog(
             onDismissRequest = { isCommentDialogOpen = false },
@@ -488,6 +437,11 @@ fun OrbitXPost(
                 Button(
                     onClick = {
                         onComment(commentText)
+                        viewModel.addComment(postuid, commentText)
+                        viewModel.updateCommentsCount(postuid, increment = true)
+                        viewModel.getPostCommentsCount(postuid) { count ->
+                            commentsCount = count
+                        }
                         isCommentDialogOpen = false
                         commentText = ""
                     }
