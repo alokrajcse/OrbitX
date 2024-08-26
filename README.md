@@ -1,6 +1,6 @@
-# 🔥🔥 Hey Guys ! We are OrbitX  🔥🔥
+# 🔥🔥 Introducing OrbitX  🔥🔥
 
-Your own feature-rich social media application designed to keep you connected and engaged with your friends and community 👥. 
+A feature-rich social media application designed to keep you connected and engaged with your friends and community 👥. 
  <img  alt="OrbitX Logo" height="200" width="200" src="https://github.com/user-attachments/assets/a5ec54ba-9f37-42d6-be69-85c447385d2e)">
 
 
