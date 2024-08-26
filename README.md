@@ -19,7 +19,7 @@ Our app offers a modern and intuitive experience with essential social features 
 
 <br><br><br><br><br><br><br><br><br>
 ### Search 🔍 -
-<img align="right" alt="Search" height="400" width="200" src="https://github.com/user-attachments/assets/5de8d772-4c61-4cf3-a9fb-3599d528f63f)">
+<img align="right" alt="Search" height="400" width="200" src="https://raw.githubusercontent.com/alokrajcse/OrbitX/master/SCREENSHOTS_ORBITX/Screenshot_2024-08-26-19-47-09-71_45ec60135c0ce08e1256c567a8da3d2e.jpg">
 
 Easily find users, posts, and hashtags. Our powerful search functionality helps you discover new content and connect with others.
 
