@@ -26,9 +26,12 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.text.SpanStyle
+import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.text.font.Font
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.withStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavType
@@ -229,7 +232,8 @@ fun OrbitXFeed(
                 OrbitXPost(
                     profileImageUrl = user?.profilepictureurl ?: "",
                     username = user?.username ?: "Unknown User",
-                    location = "Location",
+                    location = post.location,
+                    hashtag = post.hashtag,
                     owneruserid = post.owneruid,
                     postuid = post.postId,
 
@@ -260,6 +264,204 @@ fun OrbitXFeed(
     }
 }
 
+//@Composable
+//fun OrbitXPost(
+//    profileImageUrl: String,
+//    username: String,
+//    postuid: String,
+//    location: String,
+//    owneruserid: String,
+//    imageUrl: String,
+//    text: String,
+//    initialIsLiked: Boolean,
+//    likesCount: Int,
+//    commentsCount: Int,
+//    timestamp: Long,
+//    onComment: (String) -> Unit,
+//    onShare: () -> Unit,
+//    onLikeChange: (Boolean) -> Unit,
+//    viewModel: AuthViewModel = viewModel(),
+//) {
+//    val initialCommentsCount: Int = 0
+//    var commentsCount by remember { mutableStateOf(initialCommentsCount) }
+//
+//    var isLiked by remember { mutableStateOf(initialIsLiked) }
+//    var likeCounter by remember { mutableStateOf(likesCount) }
+//    var isCommentDialogOpen by remember { mutableStateOf(false) }
+//    var commentText by remember { mutableStateOf("") }
+//    val formattedTimestamp = remember(timestamp) {
+//        val dateFormat = SimpleDateFormat("dd MMM yyyy, HH:mm", Locale.getDefault())
+//        dateFormat.format(Date(timestamp))
+//    }
+//    var usrname by remember { mutableStateOf("") }
+//    var profilepicurl by remember { mutableStateOf("") }
+//
+//
+//
+//    viewModel.fetchusername(owneruserid) { it -> usrname = it }
+//    viewModel.fetchProfileurl(owneruserid) { it -> profilepicurl = it }
+//
+//
+//    println("img url::$imageUrl")
+//    println("postuid::$postuid")
+//    println("owneruserid::$owneruserid")
+//    println("profilepicurl::$profilepicurl")
+//    println("usrname::$usrname")
+//
+//    Column(
+//        modifier = Modifier
+//            .fillMaxWidth()
+//            .padding(10.dp)
+//    ) {
+//        Row(
+//            verticalAlignment = Alignment.CenterVertically
+//        ) {
+//            AsyncImage(
+//                model = ImageRequest.Builder(LocalContext.current)
+//                    .data(profilepicurl)
+//                    .crossfade(true)
+//                    .build(),
+//                placeholder = painterResource(R.drawable.avataricon),
+//                contentDescription = "",
+//                contentScale = ContentScale.Crop,
+//                modifier = Modifier
+//                    .size(40.dp)
+//                    .clip(CircleShape)
+//            )
+//
+//            Spacer(modifier = Modifier.width(8.dp))
+//
+//            Column {
+//                Text(
+//                    text = usrname,
+//                    fontWeight = FontWeight.Bold,
+//                    fontSize = 16.sp,
+//                    color = Color.Black
+//                )
+//                Text(
+//                    text = location,
+//                    fontSize = 14.sp,
+//                    color = Color.Gray
+//                )
+//            }
+//        }
+//
+//        Spacer(modifier = Modifier.height(8.dp))
+//
+//        Card(
+//            shape = RoundedCornerShape(16.dp),
+//            elevation = CardDefaults.cardElevation(8.dp),
+//            modifier = Modifier
+//                .fillMaxWidth()
+//                .padding(12.dp)
+//        ) {
+//            Image(
+//                painter = rememberImagePainter(imageUrl),
+//                contentDescription = "Post image",
+//                contentScale = ContentScale.Crop,
+//                modifier = Modifier
+//                    .fillMaxWidth()
+//                    .height(250.dp)
+//            )
+//        }
+//        Spacer(modifier = Modifier.height(8.dp))
+//        Row {
+//            IconButton(onClick = {
+//                isLiked = !isLiked
+//                likeCounter += if (isLiked) 1 else -1
+//                onLikeChange(isLiked)
+//                viewModel.updateLikesCount(postuid, isLiked)
+//            }) {
+//                Icon(
+//                    imageVector = if (isLiked) Icons.Filled.Favorite else Icons.Outlined.FavoriteBorder,
+//                    contentDescription = "Like",
+//                    tint = if (isLiked) Color.Red else Color.Black,
+//                    modifier = Modifier.size(26.dp)
+//                )
+//            }
+//
+//            IconButton(onClick = { isCommentDialogOpen = true }) {
+//                Icon(
+//                    painter = painterResource(R.drawable.speech_bubble),
+//                    contentDescription = "Comment",
+//                    modifier = Modifier.size(24.dp)
+//                )
+//            }
+//
+//            IconButton(onClick = {
+//                onShare()
+//            }) {
+//                Icon(
+//                    imageVector = Icons.Filled.Share,
+//                    contentDescription = "Share",
+//                    modifier = Modifier.size(22.dp)
+//                )
+//            }
+//        }
+//        Text(
+//            text = "$likeCounter Likes",
+//            fontWeight = FontWeight.Bold,
+//            fontSize = 14.sp,
+//            modifier = Modifier.padding(start = 12.dp),
+//        )
+//        Text(
+//            text = "$commentsCount Comments",
+//            fontSize = 14.sp,
+//            color = Color.Gray,
+//            modifier = Modifier.padding(start = 12.dp, top = 4.dp),
+//        )
+//        Text(
+//            text = text,
+//            fontSize = 14.sp,
+//            modifier = Modifier.padding(start = 12.dp),
+//            lineHeight = 20.sp,
+//        )
+//        Spacer(modifier = Modifier.height(8.dp))
+//        Text(
+//            text = formattedTimestamp,
+//            fontSize = 12.sp,
+//            color = Color.Gray,
+//            modifier = Modifier.padding(start = 12.dp, top = 4.dp),
+//        )
+//    }
+//    if (isCommentDialogOpen) {
+//        AlertDialog(
+//            onDismissRequest = { isCommentDialogOpen = false },
+//            title = {
+//                Text(text = "Add a Comment")
+//            },
+//            text = {
+//                TextField(
+//                    value = commentText,
+//                    onValueChange = { commentText = it },
+//                    placeholder = { Text(text = "Write your comment...") }
+//                )
+//            },
+//            confirmButton = {
+//                Button(
+//                    onClick = {
+//                        onComment(commentText)
+//                        viewModel.addComment(postuid, commentText)
+//                        viewModel.updateCommentsCount(postuid, increment = true)
+//                        viewModel.getPostCommentsCount(postuid) { count ->
+//                            commentsCount = count
+//                        }
+//                        isCommentDialogOpen = false
+//                        commentText = ""
+//                    }
+//                ) {
+//                    Text("Post")
+//                }
+//            },
+//            dismissButton = {
+//                Button(onClick = { isCommentDialogOpen = false }) {
+//                    Text("Cancel")
+//                }
+//            }
+//        )
+//    }
+//}
+
 @Composable
 fun OrbitXPost(
     profileImageUrl: String,
@@ -276,11 +478,11 @@ fun OrbitXPost(
     onComment: (String) -> Unit,
     onShare: () -> Unit,
     onLikeChange: (Boolean) -> Unit,
+    hashtag: String,
     viewModel: AuthViewModel = viewModel(),
 ) {
     val initialCommentsCount: Int = 0
     var commentsCount by remember { mutableStateOf(initialCommentsCount) }
-
     var isLiked by remember { mutableStateOf(initialIsLiked) }
     var likeCounter by remember { mutableStateOf(likesCount) }
     var isCommentDialogOpen by remember { mutableStateOf(false) }
@@ -291,18 +493,22 @@ fun OrbitXPost(
     }
     var usrname by remember { mutableStateOf("") }
     var profilepicurl by remember { mutableStateOf("") }
-
+    var location by remember { mutableStateOf("") }
+    var hashtag by remember { mutableStateOf("") }
 
 
     viewModel.fetchusername(owneruserid) { it -> usrname = it }
     viewModel.fetchProfileurl(owneruserid) { it -> profilepicurl = it }
-
+    viewModel.fetchLocation(postuid) { it -> location = it }
+    viewModel.fetchHashtag(postuid) { it -> hashtag = it }
 
     println("img url::$imageUrl")
     println("postuid::$postuid")
     println("owneruserid::$owneruserid")
     println("profilepicurl::$profilepicurl")
     println("usrname::$usrname")
+    println("location::$location")
+    println("hashtag::$hashtag")
 
     Column(
         modifier = Modifier
@@ -412,6 +618,17 @@ fun OrbitXPost(
             modifier = Modifier.padding(start = 12.dp),
             lineHeight = 20.sp,
         )
+        Spacer(modifier = Modifier.height(8.dp))
+
+        if(hashtag!=""&& hashtag!=null)
+        {
+        Text(
+            text = "#$hashtag",
+            fontSize = 14.sp,
+            color = Color.Blue,
+            modifier = Modifier.padding(start = 12.dp, top = 4.dp)
+        )
+        }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = formattedTimestamp,
