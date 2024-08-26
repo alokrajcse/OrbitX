@@ -178,10 +178,12 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
             sheetContent = {
                 Box(
                     modifier = Modifier
+
                         .offset {
                             // Check if the sheet is expanded or not
                             val offsetY = if (_sheetState.isVisible) 0.dp else (-100).dp
                             IntOffset(0, offsetY.roundToPx())
+
                         }
                 ) {
 
@@ -558,7 +560,9 @@ fun PostOptionsBottomSheet(
             confirmButton = {
                 Button(onClick = {
                     onHashtagEntered(hashtagText)
+
                     //textState.value = TextFieldValue(textState.value.text + " # " + hashtagText)
+
                     showDialog = false
                 }) {
                     Text("Confirm")
