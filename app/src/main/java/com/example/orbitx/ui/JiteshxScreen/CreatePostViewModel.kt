@@ -42,8 +42,23 @@ class CreatePostViewModel : ViewModel() {
 
     fun createPost(context: Context, navController: NavController, location: String, hashtag: String) {
         _isPostCreated.value = true
-        if (text.value.isBlank() || imageUri.value == null) {
-            Toast.makeText(context, "Please fill all fields", Toast.LENGTH_SHORT).show()
+        if (text.value.isBlank()) {
+            Toast.makeText(context, "Please enter text", Toast.LENGTH_SHORT).show()
+            _isPostCreated.value = false
+            return
+        }
+        if (imageUri.value == null) {
+            Toast.makeText(context, "Please select an image", Toast.LENGTH_SHORT).show()
+            _isPostCreated.value = false
+            return
+        }
+        if (location.isBlank()) {
+            Toast.makeText(context, "Please enter location", Toast.LENGTH_SHORT).show()
+            _isPostCreated.value = false
+            return
+        }
+        if (hashtag.isBlank()) {
+            Toast.makeText(context, "Please enter hashtag", Toast.LENGTH_SHORT).show()
             _isPostCreated.value = false
             return
         }
