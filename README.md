@@ -29,7 +29,7 @@ Easily find users, posts, and hashtags. Our powerful search functionality helps 
 <br><br><br><br><br><br><br><br><br>
 
 ### Create Post Screen  ➕-
-<img align="right" alt="Create Post Screen" height="400" width="200" src="https://github.com/user-attachments/assets/c9f919ae-7d13-404d-a2e5-574239f773d5)">
+<img align="right" alt="Create Post Screen" height="400" width="200" src="https://raw.githubusercontent.com/alokrajcse/OrbitX/master/SCREENSHOTS_ORBITX/Screenshot_2024-08-26-19-47-13-49_45ec60135c0ce08e1256c567a8da3d2e.jpg">
 
 Share your thoughts, photos, and videos with your network.
 
@@ -44,7 +44,7 @@ Share your thoughts, photos, and videos with your network.
 <br><br><br><br><br><br><br><br><br>
 
 ### Profile Section  👤-
-<img align="right" alt="Profile Section" height="400" width="200" src="https://github.com/user-attachments/assets/789ad85e-1d7c-459f-b140-d8bf16a5ed88)">
+<img align="right" alt="Profile Section" height="400" width="200" src="https://raw.githubusercontent.com/alokrajcse/OrbitX/master/SCREENSHOTS_ORBITX/Screenshot_2024-08-26-19-47-26-58_45ec60135c0ce08e1256c567a8da3d2e.jpg">
 
 Manage your personal information, view your posts, and customize your profile.
  
@@ -96,4 +96,4 @@ We'd like to thank the following people and organizations for their contribution
  *
  *
  * 
-## Contact ☎
+
