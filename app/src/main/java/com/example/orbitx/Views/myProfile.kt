@@ -32,6 +32,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.colorResource
+import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -49,6 +50,7 @@ import com.example.orbitx.ChatRepository.fetchFollowerCount
 import com.example.orbitx.ChatRepository.fetchFollowingCount
 import com.example.orbitx.ChatRepository.fetchProfileurl
 import com.example.orbitx.R
+import com.example.orbitx.ui.theme.fontFamily1
 import com.google.firebase.Firebase
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.database.database
@@ -115,20 +117,57 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
 
     Scaffold(
         topBar = {
-            TopAppBar(
-                title = { Text(text = "Profile") },
-                navigationIcon = {
-                    IconButton(onClick = { navController.popBackStack() }) {
-                        Icon(
-                            imageVector = Icons.Default.ArrowBack,
-                            contentDescription = "Back"
-                        )
-                    }
-                },
-                colors = TopAppBarDefaults.smallTopAppBarColors(
-                    containerColor = Color(0x85DB4A3E) // Background color for the top bar
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth()
+                    //.background(colorResource(id = R.color.orange))
+                    .padding(horizontal = 8.dp, vertical = 4.dp),
+                horizontalArrangement = Arrangement.Center,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                IconButton(onClick ={ navController.navigateUp()}) {
+                    Icon(
+                        imageVector = Icons.Filled.ArrowBack,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+
+                val customTextStyle= TextStyle(
+                    fontFamily = fontFamily1,
                 )
-            )
+
+                Box(modifier = Modifier.weight(1f), contentAlignment = Alignment.Center)
+                {
+                    Text(
+                        text = "My Profile",
+                        style=customTextStyle,
+                        fontWeight = FontWeight.SemiBold,
+                        fontSize = 16.sp,
+                        lineHeight = 24.sp,
+                        letterSpacing = 0.5.sp,
+                        color = Color.White
+
+                    )
+                }
+                IconButton(onClick ={
+                    val sendIntent: Intent = Intent().apply {
+                        action = Intent.ACTION_SEND
+                        putExtra(Intent.EXTRA_TEXT, "Checkout my profile on OrbitX: https://orbitxsocial.netlify.app/profile/$userId")
+                        type = "text/plain"
+                    }
+                    val shareIntent = Intent.createChooser(sendIntent, null)
+                    context.startActivity(shareIntent)
+                }) {
+                    Icon(
+                        imageVector = Icons.Filled.Share,
+                        contentDescription = "Back",
+                        tint = Color.White
+                    )
+                }
+
+
+            }
         }
     ) { paddingValues ->
         Box(
@@ -172,27 +211,7 @@ fun myProfileScreen(navController: NavController,userProfile: UserProfile2) {
                             }
                         }
 
-                        IconButton(
-                            onClick = {
-                                val sendIntent: Intent = Intent().apply {
-                                    action = Intent.ACTION_SEND
-                                    putExtra(Intent.EXTRA_TEXT, "Checkout my profile on OrbitX: https://orbitxsocial.netlify.app/profile/$userId")
-                                    type = "text/plain"
-                                }
-                                val shareIntent = Intent.createChooser(sendIntent, null)
-                                context.startActivity(shareIntent)
 
-                            },
-                            modifier = Modifier
-                                .align(Alignment.TopEnd)
-                                .padding(8.dp)
-                        ) {
-                            Icon(
-                                imageVector = Icons.Filled.Share,
-                                contentDescription = "Share",
-                                tint = Color.Black
-                            )
-                        }
                     }
                 }
                 item {

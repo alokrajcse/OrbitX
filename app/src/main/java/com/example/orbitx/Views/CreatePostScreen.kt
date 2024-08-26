@@ -726,9 +726,12 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
         modifier = Modifier
             .fillMaxWidth()
             //.background(colorResource(id = R.color.orange))
-            .padding(horizontal = 8.dp, vertical = 4.dp),
+            .background(colorResource(id = R.color.orange))
+            .padding(horizontal = 8.dp, vertical = 4.dp)
+            ,
         horizontalArrangement = Arrangement.SpaceBetween,
-        verticalAlignment = Alignment.CenterVertically
+        verticalAlignment = Alignment.CenterVertically,
+
     ) {
         IconButton(onClick = onBackPressed) {
             Icon(
@@ -746,13 +749,13 @@ fun TopBar(onBackPressed: () -> Unit, onPostClicked: () -> Unit) {
             fontWeight = FontWeight.SemiBold,
             fontSize = 16.sp,
             lineHeight = 24.sp,
-            letterSpacing = 0.5.sp
+            letterSpacing = 0.5.sp,
         )
         Button(onClick = onPostClicked,
-            colors = ButtonDefaults.buttonColors(containerColor = (colorResource(id = R.color.orange))) ){
+            colors = ButtonDefaults.buttonColors(containerColor = (colorResource(id = R.color.black))) ){
             Text("POST",
                 style=customTextStyle,
-                fontWeight = FontWeight.Normal,
+                fontWeight = FontWeight.ExtraBold,
                 fontSize = 12.sp,
                 color = Color.White
             )

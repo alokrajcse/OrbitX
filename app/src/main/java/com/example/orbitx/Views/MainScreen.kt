@@ -203,19 +203,29 @@ fun MainScreen(activity: Activity) {
 fun OrbitXFeed(
     userProfileData: List<User>,
     postsList: List<Posts>,
-    onRefresh: () -> Unit
+    onRefresh: () -> Unit,
+    viewModel: AuthViewModel = viewModel()
 ) {
     val context=LocalContext.current
+    var postsList by remember { mutableStateOf<List<Posts>>(emptyList()) }
     var isRefreshing by remember { mutableStateOf(false) }
 
-    // Handle the swipe refresh state
     val swipeRefreshState = rememberSwipeRefreshState(isRefreshing)
+    LaunchedEffect(Unit) {
+        viewModel.fetchPostsFromFirestore { posts ->
+            postsList = posts
+        }
+    }
 
     SwipeRefresh(
-        state = swipeRefreshState,
+        state = rememberSwipeRefreshState(isRefreshing),
+
         onRefresh = {
-            // Trigger the refresh action
-            onRefresh()
+            isRefreshing = true
+            viewModel.fetchPostsFromFirestore { posts ->
+                postsList = posts
+                isRefreshing = false
+            }
         }
     ) {
         LazyColumn(
@@ -301,11 +311,6 @@ fun OrbitXPost(
     viewModel.fetchProfileurl(owneruserid) { it -> profilepicurl = it }
 
 
-    println("img url::$imageUrl")
-    println("postuid::$postuid")
-    println("owneruserid::$owneruserid")
-    println("profilepicurl::$profilepicurl")
-    println("usrname::$usrname")
 
     Column(
         modifier = Modifier
@@ -337,11 +342,16 @@ fun OrbitXPost(
                     fontSize = 16.sp,
                     color = Color.Black
                 )
-                Text(
-                    text = location,
-                    fontSize = 14.sp,
-                    color = Color.Gray
-                )
+                if (location!=null && location!="")
+                {
+
+                    Text(
+                        text = location,
+                        fontSize = 14.sp,
+                        color = Color.Gray
+                    )
+                }
+
             }
         }
 
