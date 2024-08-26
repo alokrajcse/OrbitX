@@ -192,7 +192,10 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                                 .placeholder(R.drawable.ic_placeholder)
                                 .build(),
                             contentDescription = null,
+                            contentScale = ContentScale.Crop,
                             modifier = Modifier
+
+
                                 .size(53.dp)
                                 .clip(CircleShape)
                         )
