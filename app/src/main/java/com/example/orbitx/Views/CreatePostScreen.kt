@@ -185,11 +185,11 @@ fun CreatePostScreen(navController: NavController,viewModel: CreatePostViewModel
                         locationText = locationText,
                         onLocationTextChanged = { newLocationText ->
                             locationText = newLocationText
-                            viewModel.onTextChanged("$text $locationText")
+                            viewModel.onTextChanged("$text ")
                         },
                         onHashtagTextChanged = { newHashtagText ->
                             HashtagText = newHashtagText
-                            viewModel.onTextChanged("$text $HashtagText")
+                            viewModel.onTextChanged("$text ")
                         }
                     )
                 }
@@ -541,7 +541,7 @@ fun PostOptionsBottomSheet(
             confirmButton = {
                 Button(onClick = {
                     onHashtagEntered(hashtagText)
-                    textState.value = TextFieldValue(textState.value.text + " " + hashtagText)
+                    textState.value = TextFieldValue(textState.value.text + " " )
                     showDialog = false
                 }) {
                     Text("Confirm")
