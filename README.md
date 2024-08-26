@@ -66,7 +66,6 @@ Manage your personal information, view your posts, and customize your profile.
 ## What's Next? ❓
 - [] Messaging 
 - [] Realtime sending texts and images
-- [] Video Calling
 - [] Reels
 - [] Sending and Uploading Videos(Video Compatibility)
 
