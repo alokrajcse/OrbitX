@@ -19,7 +19,7 @@ class PostRepository(private val db: FirebaseFirestore) {
             throw IllegalArgumentException("Post text cannot be empty")
         }
 
-        return db.collection("Posts")
+        return db.collection("Posts2")
             .add(post.toHashMap())
             .addOnSuccessListener { documentReference ->
                 // Handle success

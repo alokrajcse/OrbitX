@@ -63,7 +63,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun fetchPostsFromFirestore(onResult: (List<Posts>) -> Unit) {
-        db.collection("Posts")
+        db.collection("Posts2")
             .get()
             .addOnSuccessListener { snapshot ->
                 val postsList = snapshot.documents.mapNotNull { document ->
@@ -71,15 +71,20 @@ class AuthViewModel : ViewModel() {
                     post?.postId = document.id
                     post
                 }
-                onResult(postsList)
+
+
+                val sortedPostsList = postsList.sortedByDescending { it.timestamp }
+
+                onResult(sortedPostsList)
             }
             .addOnFailureListener { e ->
                 Log.w("AuthViewModel", "Error fetching posts", e)
             }
     }
 
+
     fun updateLikesCount(postId: String, increment: Boolean) {
-        val postRef = db.collection("Posts").document(postId)
+        val postRef = db.collection("Posts2").document(postId)
 
         postRef.update("likesCount", if (increment) FieldValue.increment(1) else FieldValue.increment(-1))
             .addOnSuccessListener {
@@ -90,7 +95,7 @@ class AuthViewModel : ViewModel() {
             }
     }
     fun getPostCommentsCount(postId: String, callback: (Int) -> Unit) {
-        db.collection("Posts").document(postId)
+        db.collection("Posts2").document(postId)
             .get()
             .addOnSuccessListener { document ->
                 val commentsCount = document.getLong("commentsCount")?.toInt() ?: 0
@@ -103,7 +108,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun updateCommentsCount(postId: String, increment: Boolean) {
-        val postRef = db.collection("Posts").document(postId)
+        val postRef = db.collection("Posts2").document(postId)
 
         postRef.update("commentsCount", if (increment) FieldValue.increment(1) else FieldValue.increment(-1))
             .addOnSuccessListener {
@@ -134,7 +139,7 @@ class AuthViewModel : ViewModel() {
     }
 
     fun fetchLocation(postId: String, callback: (String) -> Unit) {
-        db.collection("Posts").document(postId)
+        db.collection("Post2s").document(postId)
             .get()
             .addOnSuccessListener { document ->
                 val location = document.getString("location") ?: ""
@@ -148,7 +153,7 @@ class AuthViewModel : ViewModel() {
 
 
     fun fetchHashtag(postId: String, callback: (String) -> Unit) {
-        db.collection("Posts").document(postId)
+        db.collection("Posts2").document(postId)
             .get()
             .addOnSuccessListener { document ->
                 val hashtag = document.getString("hashtag") ?: ""
