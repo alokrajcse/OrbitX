@@ -620,12 +620,15 @@ fun OrbitXPost(
         )
         Spacer(modifier = Modifier.height(8.dp))
 
+        if(hashtag!=""&& hashtag!=null)
+        {
         Text(
             text = "#$hashtag",
             fontSize = 14.sp,
             color = Color.Blue,
             modifier = Modifier.padding(start = 12.dp, top = 4.dp)
         )
+        }
         Spacer(modifier = Modifier.height(8.dp))
         Text(
             text = formattedTimestamp,
