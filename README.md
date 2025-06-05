@@ -1,7 +1,7 @@
 # 🚀 OrbitX – Your Next Social Universe
 
 <p align="center">
-  <img alt="OrbitX Logo" height="200" width="200" src="https://github.com/user-attachments/assets/a5ec54ba-9f37-42d6-be69-85c447385d2e)">
+  <img alt="OrbitX Logo" height="200" width="500" src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/logo4.png">
 </p>
 
 **OrbitX** is a modern, feature-rich social media platform designed to connect you seamlessly with friends and communities. Experience an intuitive interface, share moments, and explore new content—all in one place.
