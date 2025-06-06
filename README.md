@@ -78,35 +78,65 @@ We’re continuously improving OrbitX! Here’s what’s coming next:
 
 ## 🏗️ Technology Stack
 
-- **Frontend:** Jetpack Compose (Kotlin)
-- **Backend:** Firebase (serverless)
-- **Database:** Firebase Realtime Database
-- **APIs:** Firebase APIs for seamless data exchange and storage
+| Layer       | Technology                       |
+|-------------|----------------------------------|
+| Frontend    | Jetpack Compose (Kotlin)         |
+| Backend     | Firebase (Serverless Architecture)|
+| Database    | Firebase Realtime Database       |
+| APIs        | Firebase Platform APIs           |
 
 ---
 
 ## 🤝 Contributing
 
-We love community contributions! To get started:
+- Contributions make the open source community such an amazing place to learn, inspire, and create.
+- Any contributions you make are greatly appreciated.
 
-1. **Fork** this repository.
-2. **Create** a new branch for your feature or fix.
-3. **Commit** your changes with clear, descriptive messages.
-4. **Open a Pull Request** targeting the main branch.
+- We welcome your ideas and contributions! To get started:
+
+1. **Fork** the repository.
+2. **Create** a feature branch (`git checkout -b feature/your-feature`).
+3. **Commit** your changes with clear, concise messages.
+4. **Push** to your fork and open a Pull Request to the `main` branch.
+
+
+
+<br/>
+
+<p align="center">
+  <a href="https://github.com/Jitesh8260">
+    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/Jitesh8260.png" width="70px" alt="Jitesh" />
+  </a>
+  <a href="https://github.com/subham-behera">
+    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  </a>
+  <a href="https://github.com/subham-behera">
+    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  </a>
+  <a href="https://github.com/subham-behera">
+    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  </a>
+  <a href="https://github.com/subham-behera">
+    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  </a>
+</p>
+
+<h3 align="center">Thanks to all Collaborators 💪</h3>
 
 ---
 
-## 🙏 Acknowledgements
+## 📄 License
 
-We’d like to thank the following people and organizations for their support and contributions:
-
-- Jitesh Bhakat
-- Alok Raj Mahto
-- Kuldeep Naik
-- Laurina Pattnaik
-- Khusi Pandey
+This project is licensed under the [MIT License](LICENSE).
 
 ---
+
+## 🌐 Live Demo
+
+👉 [Available soon...](https://your-deployed-link.com) 
+
+---
+
 
 <p align="center">
   <b>Connect. Share. Explore. Welcome to OrbitX.</b>
