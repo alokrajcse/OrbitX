@@ -104,21 +104,11 @@ We’re continuously improving OrbitX! Here’s what’s coming next:
 <br/>
 
 <p align="center">
-  <a href="https://github.com/Jitesh8260">
-    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/Jitesh8260.png" width="70px" alt="Jitesh" />
-  </a>
-  <a href="https://github.com/alokrajcse">
-    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/alok.png" width="70px" alt="Subham" />
-  </a>
-  <a href="https://github.com/khusipandey">
-    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/khusi.jpg" width="70px" alt="Subham" />
-  </a>
-  <a href="https://github.com/Laurina23">
-    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/laurina.jpg" width="70px" alt="Subham" />
-  </a>
-  <a href="https://github.com/karan23831">
-    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/karan.png" width="70px" alt="Subham" />
-  </a>
+  <a href="https://github.com/Jitesh8260"><img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/Jitesh8260.png" width="70px" alt="Jitesh" /></a><!--
+  --><a href="https://github.com/alokrajcse"><img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/alok.png" width="70px" alt="Alok" /></a><!--
+  --><a href="https://github.com/khusipandey"><img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/khusi.jpg" width="70px" alt="Khusi" /></a><!--
+  --><a href="https://github.com/Laurina23"><img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/laurina.jpg" width="70px" alt="Laurina" /></a><!--
+  --><a href="https://github.com/karan23831"><img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/karan.png" width="70px" alt="Karan" /></a>
 </p>
 
 <h3 align="center">Thanks to all Collaborators 💪</h3>
@@ -133,11 +123,11 @@ This project is licensed under the [MIT License](LICENSE).
 
 ## 🌐 Live Demo
 
-👉 [Available soon...](https://your-deployed-link.com) 
+👉 [OrbitX](https://drive.google.com/file/d/1Uvm_bU-hhm_4AQcc8LUA4wFMQtgp8L63/view?usp=drive_link) 
 
 ---
 
 
 <p align="center">
-  <b>Connect. Share. Explore. Welcome to OrbitX.</b>
+  <b>Discover. Discuss. Share. Welcome to OrbitX.</b>
 </p>
