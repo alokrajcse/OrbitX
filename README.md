@@ -107,17 +107,17 @@ We’re continuously improving OrbitX! Here’s what’s coming next:
   <a href="https://github.com/Jitesh8260">
     <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/Jitesh8260.png" width="70px" alt="Jitesh" />
   </a>
-  <a href="https://github.com/subham-behera">
-    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  <a href="https://github.com/alokrajcse">
+    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/alok.png" width="70px" alt="Subham" />
   </a>
-  <a href="https://github.com/subham-behera">
-    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  <a href="https://github.com/khusipandey">
+    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/khusi.jpg" width="70px" alt="Subham" />
   </a>
-  <a href="https://github.com/subham-behera">
-    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  <a href="https://github.com/Laurina23">
+    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/laurina.jpg" width="70px" alt="Subham" />
   </a>
-  <a href="https://github.com/subham-behera">
-    <img src="https://github.com/subham-behera/e-Pariksha/blob/main/assets/subham-behera.png" width="70px" alt="Subham" />
+  <a href="https://github.com/karan23831">
+    <img src="https://github.com/alokrajcse/OrbitX/blob/master/SCREENSHOTS_ORBITX/karan.png" width="70px" alt="Subham" />
   </a>
 </p>
 
