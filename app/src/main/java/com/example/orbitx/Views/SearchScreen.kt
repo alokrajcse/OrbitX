@@ -8,6 +8,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material.icons.filled.Search
@@ -53,26 +54,23 @@ fun SearchScreen(navController: NavController, modifier: Modifier = Modifier) {
 
     Box(
         modifier = Modifier
-            .background(Color(0xFFFFE0B2))
+            .background(Color(0xFFF4F3F8)) // Soft purple/grey app theme background
             .fillMaxSize()
     ) {
         Column(
             modifier = modifier
                 .fillMaxSize()
         ) {
-            Row(modifier = Modifier.background(color = colorResource(id = R.color.orange)).padding(5.dp), verticalAlignment = Alignment.CenterVertically) {
-
-//                IconButton(onClick = {
-//                    navController.navigateUp()
-//                }) {
-//                    Icon(imageVector = Icons.Filled.ArrowBack, contentDescription = "")
-//
-//                }
-
+            Surface(
+                modifier = Modifier.fillMaxWidth(),
+                color = Color.White,
+                shadowElevation = 4.dp,
+                shape = RoundedCornerShape(bottomStart = 24.dp, bottomEnd = 24.dp)
+            ) {
                 Box(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(10.dp),
+                        .padding(horizontal = 20.dp, vertical = 16.dp),
                     contentAlignment = Alignment.Center
                 ) {
                     TextField(
@@ -80,80 +78,82 @@ fun SearchScreen(navController: NavController, modifier: Modifier = Modifier) {
                             Icon(
                                 imageVector = Icons.Default.Search,
                                 contentDescription = null,
-                                tint = Color.Gray
+                                tint = Color(0xFFA0AEC0) // Soft grey for icon
                             )
                         },
                         value = searchText,
                         onValueChange = viewModel::onSearchTextChange,
                         modifier = Modifier
                             .fillMaxWidth()
-                            .height(55.dp)  // Adjust the height to match Instagram's style
-                            .clip(CircleShape) // Rounded corners
-                            .background(Color(0xFFEFEFEF)), // Light grey background
+                            .height(52.dp)
+                            .clip(RoundedCornerShape(26.dp)) 
+                            .background(Color(0xFFF4F3F8)), // Match app background in input
                         placeholder = {
-                            Text(text = "Search", fontSize = 16.sp) // Adjust font size here
+                            Text(text = "Search users...", fontSize = 16.sp, color = Color(0xFFA0AEC0))
                         },
                         colors = TextFieldDefaults.textFieldColors(
-                            focusedTextColor =  Color.Black,
-                            containerColor = Color.Transparent, // Transparent to use background
-                            focusedIndicatorColor = Color.Transparent, // Remove underline
-                            unfocusedIndicatorColor = Color.Transparent // Remove underline
+                            focusedTextColor = Color(0xFF2D3748),
+                            unfocusedTextColor = Color(0xFF2D3748),
+                            containerColor = Color.Transparent, 
+                            focusedIndicatorColor = Color.Transparent, 
+                            unfocusedIndicatorColor = Color.Transparent 
                         ),
                         singleLine = true,
-                        textStyle = LocalTextStyle.current.copy(fontSize = 16.sp) // Adjust font size here
+                        textStyle = LocalTextStyle.current.copy(fontSize = 16.sp)
                     )
                 }
-
-
             }
-
 
             Spacer(modifier = Modifier.height(16.dp))
 
             LazyColumn(
                 modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(16.dp)
+                    .fillMaxWidth(),
+                contentPadding = PaddingValues(horizontal = 16.dp, vertical = 8.dp),
+                verticalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 items(persons) { person ->
-                    var profilepicurl by remember { mutableStateOf("") }
+                    var userprofilepicurl by remember { mutableStateOf("") }
 
                     LaunchedEffect(person.parent) {
                         fetchProfileurl(person.parent) { it ->
-                            profilepicurl = it
+                            userprofilepicurl = it
                         }
                     }
 
                     Card(
                         modifier = Modifier
                             .fillMaxWidth()
-                            .padding(vertical = 8.dp)
                             .clickable {
                                 navController.navigate("otheruserprofile/${person.parent}")
                                 println("UUUID:${person.parent}")
                             },
-                        colors = CardDefaults.cardColors(Color.White)
+                        colors = CardDefaults.cardColors(Color.White),
+                        shape = RoundedCornerShape(20.dp),
+                        elevation = CardDefaults.cardElevation(defaultElevation = 2.dp)
                     ) {
                         Row(
                             modifier = Modifier.padding(16.dp),
                             verticalAlignment = Alignment.CenterVertically
                         ) {
                             AsyncImage(
-                                model = profilepicurl.ifEmpty { R.drawable.avataricon },
+                                model = userprofilepicurl.ifEmpty { R.drawable.avataricon },
                                 contentDescription = null,
                                 contentScale = ContentScale.Crop,
                                 modifier = Modifier
+                                    .size(56.dp)
                                     .clip(CircleShape)
-                                    .height(60.dp)
-                                    .width(60.dp)
                             )
+                            
+                            Spacer(modifier = Modifier.width(16.dp))
 
                             Text(
                                 text = person.userName,
-                                fontFamily = FontFamily.Monospace,
-                                modifier = Modifier
-                                    .fillMaxWidth()
-                                    .padding(10.dp)
+                                style = LocalTextStyle.current.copy(
+                                    fontWeight = androidx.compose.ui.text.font.FontWeight.Bold,
+                                    fontSize = 16.sp,
+                                    color = Color(0xFF2D3748)
+                                )
                             )
                         }
                     }

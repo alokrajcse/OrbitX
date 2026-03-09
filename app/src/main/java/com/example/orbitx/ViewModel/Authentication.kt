@@ -19,6 +19,9 @@ import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import com.google.firebase.messaging.FirebaseMessaging
+import com.google.firebase.storage.FirebaseStorage
+import android.net.Uri
+import java.util.UUID
 
 class AuthViewModel : ViewModel() {
     private val _userProfileData = MutableLiveData<List<User>>()
@@ -94,6 +97,50 @@ class AuthViewModel : ViewModel() {
                 Log.e("AuthViewModel", "Failed to update likes count", e)
             }
     }
+
+    fun toggleLikeForUser(postId: String, isLiked: Boolean) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val likeRef = db.collection("Likes").document("${postId}_$userId")
+        
+        if (isLiked) {
+            likeRef.set(mapOf("postId" to postId, "userId" to userId))
+            updateLikesCount(postId, true)
+        } else {
+            likeRef.delete()
+            updateLikesCount(postId, false)
+        }
+    }
+
+    fun checkIfUserLikedPost(postId: String, callback: (Boolean) -> Unit) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return callback(false)
+        val likeRef = db.collection("Likes").document("${postId}_$userId")
+        likeRef.get().addOnSuccessListener { doc ->
+            callback(doc.exists())
+        }.addOnFailureListener {
+            callback(false)
+        }
+    }
+
+    fun toggleBookmarkForUser(postId: String, isBookmarked: Boolean) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val bookmarkRef = db.collection("Bookmarks").document("${postId}_$userId")
+        
+        if (isBookmarked) {
+            bookmarkRef.set(mapOf("postId" to postId, "userId" to userId, "timestamp" to FieldValue.serverTimestamp()))
+        } else {
+            bookmarkRef.delete()
+        }
+    }
+
+    fun checkIfUserBookmarkedPost(postId: String, callback: (Boolean) -> Unit) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return callback(false)
+        val bookmarkRef = db.collection("Bookmarks").document("${postId}_$userId")
+        bookmarkRef.get().addOnSuccessListener { doc ->
+            callback(doc.exists())
+        }.addOnFailureListener {
+            callback(false)
+        }
+    }
     fun getPostCommentsCount(postId: String, callback: (Int) -> Unit) {
         db.collection("Posts2").document(postId)
             .get()
@@ -119,11 +166,121 @@ class AuthViewModel : ViewModel() {
             }
     }
 
+    fun uploadStoryImage(
+        imageUri: Uri, 
+        context: android.content.Context, 
+        textElements: List<TextElement> = emptyList(),
+        stickerElements: List<StickerElement> = emptyList(),
+        onResult: (Boolean) -> Unit
+    ) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return onResult(false)
+        val imageFileName = UUID.randomUUID().toString() + ".jpg"
+        val storageRef = FirebaseStorage.getInstance().reference.child("stories/$userId/$imageFileName")
+
+        storageRef.putFile(imageUri)
+            .addOnSuccessListener {
+                storageRef.downloadUrl.addOnSuccessListener { uri ->
+                    addStoryToFirestore(uri.toString(), textElements, stickerElements, onResult)
+                }.addOnFailureListener {
+                    Log.e("AuthViewModel", "Failed to get download URL", it)
+                    onResult(false)
+                }
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to upload story image", e)
+                onResult(false)
+            }
+    }
+
+    private fun addStoryToFirestore(
+        imageUrl: String, 
+        textElements: List<TextElement>,
+        stickerElements: List<StickerElement>,
+        onResult: (Boolean) -> Unit
+    ) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return onResult(false)
+        val storiesRef = db.collection("Stories")
+        val storyId = storiesRef.document().id
+
+        val newStory = Story(
+            storyId = storyId,
+            userId = userId,
+            imageUrl = imageUrl,
+            timestamp = FieldValue.serverTimestamp() as? com.google.firebase.Timestamp,
+            textElements = textElements,
+            stickerElements = stickerElements
+        )
+
+        storiesRef.document(storyId)
+            .set(newStory)
+            .addOnSuccessListener {
+                Log.d("AuthViewModel", "Story added to Firestore successfully")
+                onResult(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to add story to Firestore", e)
+                onResult(false)
+            }
+    }
+
+    fun fetchAllStories(callback: (List<Story>) -> Unit) {
+        db.collection("Stories")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val currentTimeSeconds = System.currentTimeMillis() / 1000
+                val oneDaySeconds = 24 * 60 * 60
+
+                val storiesList = snapshot.documents.mapNotNull { it.toObject(Story::class.java) }
+                
+                // Filter out stories older than 24 hours
+                val validStories = storiesList.filter { story ->
+                    val storyTime = story.timestamp?.seconds ?: 0L
+                    (currentTimeSeconds - storyTime) <= oneDaySeconds
+                }
+
+                // Sort: group by userId, but within a user sort by oldest first so they play chronologically
+                val sortedList = validStories.sortedWith(compareBy({ it.userId }, { it.timestamp?.seconds ?: 0L }))
+                
+                callback(sortedList)
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to fetch stories", e)
+                callback(emptyList())
+            }
+    }
+
+    fun markStoryAsSeen(storyId: String) {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        db.collection("Stories").document(storyId)
+            .update("viewers", FieldValue.arrayUnion(userId))
+            .addOnSuccessListener {
+                Log.d("AuthViewModel", "Successfully marked story $storyId as seen by $userId")
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to mark story as seen", e)
+            }
+    }
+
+    fun deleteStory(storyId: String, onResult: (Boolean) -> Unit) {
+        // Technically this only deletes the Firestore document. If we wanted to, we could delete the Storage file too.
+        db.collection("Stories").document(storyId)
+            .delete()
+            .addOnSuccessListener {
+                Log.d("AuthViewModel", "Successfully deleted story $storyId")
+                onResult(true)
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to delete story $storyId", e)
+                onResult(false)
+            }
+    }
+
     fun addComment(postId: String, commentText: String) {
         val commentsRef = db.collection("Comments") // Use Comments collection directly
 
         val commentId = commentsRef.document().id
         val newComment = Comment(
+            postId = postId,
             commentText = commentText,
             timestamp = FieldValue.serverTimestamp() as? com.google.firebase.Timestamp
         )
@@ -135,6 +292,20 @@ class AuthViewModel : ViewModel() {
             }
             .addOnFailureListener { e ->
                 Log.e("AuthViewModel", "Failed to add comment", e)
+            }
+    }
+
+    fun fetchComments(postId: String, callback: (List<Comment>) -> Unit) {
+        db.collection("Comments").whereEqualTo("postId", postId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val commentsList = snapshot.documents.mapNotNull { it.toObject(Comment::class.java) }
+                val sortedList = commentsList.sortedBy { it.timestamp?.seconds ?: 0L }
+                callback(sortedList)
+            }
+            .addOnFailureListener { e ->
+                Log.e("AuthViewModel", "Failed to fetch comments", e)
+                callback(emptyList())
             }
     }
 
@@ -237,7 +408,40 @@ fun writeNewUser(userId: String, email: String, username: String) {
     database.child("users").child(userId).setValue(user)
 }
 
+
 data class Comment(
-    val commentText: String,
+    val postId: String = "",
+    val commentText: String = "",
     val timestamp: com.google.firebase.Timestamp? = null
+)
+
+data class Story(
+    val storyId: String = "",
+    val userId: String = "",
+    val imageUrl: String = "",
+    val timestamp: com.google.firebase.Timestamp? = null,
+    val viewers: List<String> = emptyList(),
+    val textElements: List<TextElement> = emptyList(),
+    val stickerElements: List<StickerElement> = emptyList()
+)
+
+data class TextElement(
+    val id: String = "",
+    val text: String = "",
+    val colorString: String = "FFFFFFFF", // Default White
+    val bgStyle: String = "NONE",
+    val fontFamily: String = "DEFAULT",
+    val offsetX: Float = 0f,
+    val offsetY: Float = 0f,
+    val scale: Float = 1f,
+    val rotation: Float = 0f
+)
+
+data class StickerElement(
+    val id: String = "",
+    val stickerId: String = "", // E.g., emoji string or resource identifier
+    val offsetX: Float = 0f,
+    val offsetY: Float = 0f,
+    val scale: Float = 1f,
+    val rotation: Float = 0f
 )
